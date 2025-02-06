@@ -29,6 +29,7 @@
             padding: 15px;
             border-radius: 5px;
         }
+
         .scenarios {
             font-size: 1.2em;
             background-color: rgb(68, 155, 202);
@@ -137,25 +138,54 @@
             </div>
         </div>
         {% endif %}
-        
-        {% if game_results %}
-        <div class="box game-results" id="game-results">
-            <div class="toggle-header" onclick="toggleSection('game-results')">Simulated Game Results</div>
+
+        {% if division_winners %}
+        <div class="box division-winners expanded" id="division-winners">
+            <div class="toggle-header" onclick="toggleSection('division-winners')">Division Winners (Clinched a Bye)</div>
             <div class="content">
-                {% for i in range(game_results|length) %}
-                    {% if i == 0 %}<h3>Thursday Week 4</h3>{% elif i == 4 %}<h3>Tuesday Week 5</h3>{% elif i == 8 %}<h3>Thursday Week 5</h3>{% endif %}
-                    {% if i < game_results|length %}
-                        {% set parts = game_results[i].split(' ') %}
-                        <p>
-                            <span class="team">{{ parts[0] }}</span> beats
-                            <span class="team">{{ parts[2] }}</span> by
-                            <span class="score">{{ parts[4] }}</span> runs
-                        </p>
-                    {% endif %}
+                {% for division, winner in division_winners.items() %}
+                <p>{{ division }}: {{ winner }}</p>
                 {% endfor %}
             </div>
         </div>
         {% endif %}
     </div>
+
+    {% if standings %}
+    <div class="container">
+        <div class="box scenarios" id="scenarios">
+            <div class="toggle-header" onclick="toggleSection('scenarios')">Playoff Scenarios (Probabilities)</div>
+            <div class="content">
+                <table>
+                    <tr>
+                        <th>Team</th>
+                        <th>Clinch a Bye</th>
+                        <th>Clinch Playoffs</th>
+                        <th>Miss Playoffs</th>
+                    </tr>
+                    {% for team, scenario in scenarios.items() %}
+                    <tr>
+                        <td>{{ team }}</td>
+                        <td>{{ "%.2f"|format(scenario['clinch_bye'] * 100) }}%</td>
+                        <td>{{ "%.2f"|format(scenario['clinch_playoffs'] * 100) }}%</td>
+                        <td>{{ "%.2f"|format(scenario['miss_playoffs'] * 100) }}%</td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+
+        <div class="box game-results" id="game-results">
+            <div class="toggle-header" onclick="toggleSection('game-results')">Simulated Game Results</div>
+            <div class="content">
+                {% for i in range(12) %}
+                    {% if i == 0 %}<h3>Thursday Week 4</h3>{% elif i == 4 %}<h3>Tuesday Week 5</h3>{% elif i == 8 %}<h3>Thursday Week 5</h3>{% endif %}
+                    {% set parts = game_results[i].split(' ') %}
+                    <p><span class="team">{{ parts[0] }}</span> beats <span class="team">{{ parts[2] }}</span> by <span class="score">{{ parts[4] }}</span> runs</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
 </body>
 </html>
