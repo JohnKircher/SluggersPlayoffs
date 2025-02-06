@@ -9,13 +9,6 @@
             font-family: Arial, sans-serif;
             margin: 20px;
         }
-        .input-group {
-            margin-bottom: 10px;
-        }
-        .input-group label {
-            display: inline-block;
-            width: 100px;
-        }
         .container {
             display: flex;
             flex-wrap: wrap;
@@ -27,132 +20,172 @@
             flex: 1 1 auto;
             min-width: 200px;
             box-sizing: border-box;
+            margin-bottom: 20px;
         }
-        .standings {
-            background-color: lightblue;
+        .standings{
+            font-size: 1.2em;
+            background-color: rgb(81, 106, 164);
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+        }
+
+        .scenarios {
+            font-size: 1.2em;
+            background-color: rgb(68, 155, 202);
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        .standings table, .scenarios table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+        .standings th, .standings td, .scenarios th, .scenarios td {
+            border: 1px solid white;
+            padding: 5px;
         }
         .division-winners {
-            background-color: gold;
-        }
-        .scenarios {
-            background-color: lightgreen;
+            background-color: rgb(81, 106, 164);
+            font-size: 2em;
+            font-weight: bold;
+            text-align: center;
+            padding: 15px;
+            border-radius: 5px;
         }
         .game-results {
-            background-color: lightcoral;
+            font-size: 1.2em;
+            background-color: rgb(68, 155, 202);
+            padding: 15px;
+            border-radius: 5px;
         }
-        .top-row, .bottom-row {
+        .toggle-header {
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1.5em;
+            padding: 10px;
+            background-color: #000000;
+            color: white;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        .content {
+            display: none;
+            padding-top: 10px;
+        }
+        .expanded .content {
+            display: block;
+        }
+        .form-container .input-group {
             display: flex;
-            gap: 20px;
-            width: 100%;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
         }
-        .top-row .box, .bottom-row .box {
+        .form-container .input-group label {
             flex: 1;
+            text-align: right;
+            padding-right: 10px;
         }
-        .form-container {
-            flex: 1;
-            max-width: 300px;
+        .form-container .input-group input {
+            flex: 2;
+            text-align: center;
         }
     </style>
+    <script>
+        function toggleSection(id) {
+            document.getElementById(id).classList.toggle('expanded');
+        }
+    </script>
 </head>
 <body>
     <h1>Baseball Simulation</h1>
     <div class="container">
-        <!-- Top Row: Input Form, Standings, Division Winners -->
-        <div class="top-row">
-            <!-- Input Form -->
-            <div class="form-container">
-                <form method="POST">
-                    <div class="input-group">
-                        <label for="Julian">Julian:</label>
-                        <input type="number" step="0.01" name="Julian" required>
-                    </div>
-                    <div class="input-group">
-                        <label for="BenT">BenT:</label>
-                        <input type="number" step="0.01" name="BenT" required>
-                    </div>
-                    <div class="input-group">
-                        <label for="BenR">BenR:</label>
-                        <input type="number" step="0.01" name="BenR" required>
-                    </div>
-                    <div class="input-group">
-                        <label for="Kircher">Kircher:</label>
-                        <input type="number" step="0.01" name="Kircher" required>
-                    </div>
-                    <div class="input-group">
-                        <label for="Carbone">Carbone:</label>
-                        <input type="number" step="0.01" name="Carbone" required>
-                    </div>
-                    <div class="input-group">
-                        <label for="HarryKirch">HarryKirch:</label>
-                        <input type="number" step="0.01" name="HarryKirch" required>
-                    </div>
-                    <div class="input-group">
-                        <label for="Jmo">Jmo:</label>
-                        <input type="number" step="0.01" name="Jmo" required>
-                    </div>
-                    <div class="input-group">
-                        <label for="Tom">Tom:</label>
-                        <input type="number" step="0.01" name="Tom" required>
-                    </div>
-                    <button type="submit">Run Simulation</button>
-                </form>
-            </div>
-
-            <!-- Standings -->
-            {% if standings %}
-            <div class="box standings">
-                <h2>Final Standings</h2>
-                <ol>
-                    {% for team in standings %}
-                    <li>{{ team }}: {{ simulated_standings[team]['wins'] }}-{{ simulated_standings[team]['losses'] }}, Run Diff: {{ simulated_standings[team]['run_diff'] }}</li>
-                    {% endfor %}
-                </ol>
-            </div>
-            {% endif %}
-
-            <!-- Division Winners -->
-            {% if division_winners %}
-            <div class="box division-winners">
-                <h2>Division Winners (Clinched a Bye)</h2>
-                <ul>
-                    {% for division, winner in division_winners.items() %}
-                    <li>{{ division }}: {{ winner }}</li>
-                    {% endfor %}
-                </ul>
-            </div>
-            {% endif %}
+        <div class="box form-container">
+            <h2>Input Team Strengths</h2>
+            <form method="POST">
+                {% for team in ["Julian", "BenT", "BenR", "Kircher", "Carbone", "HarryKirch", "Jmo", "Tom"] %}
+                <div class="input-group">
+                    <label for="{{ team }}">{{ team }}:</label>
+                    <input type="number" step="0.01" name="{{ team }}" value="{{ strength_values.get(team, '') }}" required>
+                </div>
+                {% endfor %}
+                <button type="submit">Run Simulation</button>
+            </form>
         </div>
-
-        <!-- Bottom Row: Playoff Scenarios and Game Results -->
+        
         {% if standings %}
-        <div class="bottom-row">
-            <!-- Playoff Scenarios -->
-            <div class="box scenarios">
-                <h2>Playoff Scenarios (Probabilities)</h2>
-                <ul>
-                    {% for team, scenario in scenarios.items() %}
-                    <li>{{ team }}:
-                        <ul>
-                            <li>Clinch a bye: {{ "%.2f"|format(scenario['clinch_bye'] * 100) }}%</li>
-                            <li>Clinch playoffs: {{ "%.2f"|format(scenario['clinch_playoffs'] * 100) }}%</li>
-                            <li>Miss playoffs: {{ "%.2f"|format(scenario['miss_playoffs'] * 100) }}%</li>
-                        </ul>
-                    </li>
+        <div class="box standings expanded" id="standings">
+            <div class="toggle-header" onclick="toggleSection('standings')">Final Standings</div>
+            <div class="content">
+                <table>
+                    <tr>
+                        <th>Team</th>
+                        <th>Wins</th>
+                        <th>Losses</th>
+                        <th>Run Diff</th>
+                    </tr>
+                    {% for team in standings %}
+                    <tr>
+                        <td>{{ team }}</td>
+                        <td>{{ simulated_standings[team]['wins'] }}</td>
+                        <td>{{ simulated_standings[team]['losses'] }}</td>
+                        <td>{{ simulated_standings[team]['run_diff'] }}</td>
+                    </tr>
                     {% endfor %}
-                </ul>
+                </table>
             </div>
+        </div>
+        {% endif %}
 
-            <!-- Simulated Game Results -->
-            <div class="box game-results">
-                <h2>Simulated Game Results</h2>
-                <ul>
-                    {% for result in game_results %}
-                    <li>{{ result }}</li>
-                    {% endfor %}
-                </ul>
+        {% if division_winners %}
+        <div class="box division-winners expanded" id="division-winners">
+            <div class="toggle-header" onclick="toggleSection('division-winners')">Division Winners (Clinched a Bye)</div>
+            <div class="content">
+                {% for division, winner in division_winners.items() %}
+                <p>{{ division }}: {{ winner }}</p>
+                {% endfor %}
             </div>
         </div>
         {% endif %}
     </div>
+
+    {% if standings %}
+    <div class="container">
+        <div class="box scenarios" id="scenarios">
+            <div class="toggle-header" onclick="toggleSection('scenarios')">Playoff Scenarios (Probabilities)</div>
+            <div class="content">
+                <table>
+                    <tr>
+                        <th>Team</th>
+                        <th>Clinch a Bye</th>
+                        <th>Clinch Playoffs</th>
+                        <th>Miss Playoffs</th>
+                    </tr>
+                    {% for team, scenario in scenarios.items() %}
+                    <tr>
+                        <td>{{ team }}</td>
+                        <td>{{ "%.2f"|format(scenario['clinch_bye'] * 100) }}%</td>
+                        <td>{{ "%.2f"|format(scenario['clinch_playoffs'] * 100) }}%</td>
+                        <td>{{ "%.2f"|format(scenario['miss_playoffs'] * 100) }}%</td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+
+        <div class="box game-results" id="game-results">
+            <div class="toggle-header" onclick="toggleSection('game-results')">Simulated Game Results</div>
+            <div class="content">
+                {% for i in range(12) %}
+                    {% if i == 0 %}<h3>Thursday Week 4</h3>{% elif i == 4 %}<h3>Tuesday Week 5</h3>{% elif i == 8 %}<h3>Thursday Week 5</h3>{% endif %}
+                    {% set parts = game_results[i].split(' ') %}
+                    <p><span class="team">{{ parts[0] }}</span> beats <span class="team">{{ parts[2] }}</span> by <span class="score">{{ parts[4] }}</span> runs</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
 </body>
 </html>
