@@ -107,7 +107,7 @@
                 {% for team in ["Julian", "BenT", "BenR", "Kircher", "Carbone", "HarryKirch", "Jmo", "Tom"] %}
                 <div class="input-group">
                     <label for="{{ team }}">{{ team }}:</label>
-                    <input type="number" step="0.01" name="{{ team }}" value="{{ strength_values.get(team, '') }}" required>
+                    <input type="number" step="0.01" name="{{ team }}" value="{{ request.form.get(team, '') }}" required>
                 </div>
                 {% endfor %}
                 <button type="submit">Run Simulation</button>
