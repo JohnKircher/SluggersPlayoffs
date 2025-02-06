@@ -1,8 +1,41 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, jsonify
 import random
+import sqlite3
 from collections import defaultdict
 
 app = Flask(__name__)
+
+# Initialize database for storing click count
+DB_FILE = "clicks.db"
+
+def init_db():
+    """Initialize the database and create table if it doesn't exist."""
+    conn = sqlite3.connect(DB_FILE)
+    c = conn.cursor()
+    c.execute('''CREATE TABLE IF NOT EXISTS click_count (id INTEGER PRIMARY KEY, count INTEGER)''')
+    c.execute('''INSERT INTO click_count (id, count) SELECT 1, 0 WHERE NOT EXISTS (SELECT 1 FROM click_count)''')
+    conn.commit()
+    conn.close()
+
+def increment_click_count():
+    """Increment the simulation click count in the database."""
+    conn = sqlite3.connect(DB_FILE)
+    c = conn.cursor()
+    c.execute("UPDATE click_count SET count = count + 1 WHERE id = 1")
+    conn.commit()
+    conn.close()
+
+def get_click_count():
+    """Retrieve the current click count."""
+    conn = sqlite3.connect(DB_FILE)
+    c = conn.cursor()
+    c.execute("SELECT count FROM click_count WHERE id = 1")
+    count = c.fetchone()[0]
+    conn.close()
+    return count
+
+# Ensure the database is initialized at startup
+init_db()
 
 # Function to calculate standings with run differential
 def calculate_standings(teams, remaining_games, results, run_diffs):
@@ -124,10 +157,17 @@ def playoff_scenarios(teams, remaining_games, num_simulations=10000):
     
     return scenarios
 
+@app.route('/get-click-count', methods=['GET'])
+def get_click_count_api():
+    """API endpoint to retrieve the current click count."""
+    return jsonify({'count': get_click_count()})
+
 # Home route
 @app.route('/', methods=['GET', 'POST'])
 def home():
     if request.method == 'POST':
+
+        increment_click_count()
         # Get strength values from the form
         strength_values = {
             'Julian': float(request.form['Julian']),
@@ -171,9 +211,9 @@ def home():
         sorted_standings, simulated_standings, division_winners, game_results = run_single_simulation(teams, remaining_games)
         scenarios = playoff_scenarios(teams, remaining_games)
 
-        return render_template('index.html', standings=sorted_standings, simulated_standings=simulated_standings, division_winners=division_winners, game_results=game_results, scenarios=scenarios, strength_values=strength_values)
+        return render_template('index.html', standings=sorted_standings, simulated_standings=simulated_standings, division_winners=division_winners, game_results=game_results, scenarios=scenarios, strength_values=strength_values, click_count=get_click_count())
 
-    return render_template('index.html')
+    return render_template('index.html', click_count=get_click_count())
 
 if __name__ == '__main__':
     app.run(debug=True)
