@@ -5,15 +5,27 @@ from collections import defaultdict
 
 app = Flask(__name__)
 
-# Initialize database for storing click count
+# Initialize database for storing click count and simulation results
 DB_FILE = "clicks.db"
 
 def init_db():
-    """Initialize the database and create table if it doesn't exist."""
+    """Initialize the database and create tables if they don't exist."""
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()
+    # Table for click count
     c.execute('''CREATE TABLE IF NOT EXISTS click_count (id INTEGER PRIMARY KEY, count INTEGER)''')
     c.execute('''INSERT INTO click_count (id, count) SELECT 1, 0 WHERE NOT EXISTS (SELECT 1 FROM click_count)''')
+    # Table for simulation results
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS simulation_results (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            team TEXT,
+            clinch_bye REAL,
+            clinch_playoffs REAL,
+            miss_playoffs REAL,
+            strength REAL
+        )
+    ''')
     conn.commit()
     conn.close()
 
@@ -33,6 +45,35 @@ def get_click_count():
     count = c.fetchone()[0]
     conn.close()
     return count
+
+def save_simulation_results(teams, scenarios, strength_values):
+    """Save the simulation results for each team in the database."""
+    conn = sqlite3.connect(DB_FILE)
+    c = conn.cursor()
+    for team, scenario in scenarios.items():
+        c.execute('''
+            INSERT INTO simulation_results (team, clinch_bye, clinch_playoffs, miss_playoffs, strength)
+            VALUES (?, ?, ?, ?, ?)
+        ''', (team, scenario['clinch_bye'], scenario['clinch_playoffs'], scenario['miss_playoffs'], strength_values[team]))
+    conn.commit()
+    conn.close()
+
+def get_accumulated_results():
+    """Retrieve accumulated simulation results for each team."""
+    conn = sqlite3.connect(DB_FILE)
+    c = conn.cursor()
+    c.execute('''
+        SELECT team,
+               AVG(clinch_bye) AS avg_clinch_bye,
+               AVG(clinch_playoffs) AS avg_clinch_playoffs,
+               AVG(miss_playoffs) AS avg_miss_playoffs,
+               AVG(strength) AS avg_strength
+        FROM simulation_results
+        GROUP BY team
+    ''')
+    results = c.fetchall()
+    conn.close()
+    return results
 
 # Ensure the database is initialized at startup
 init_db()
@@ -162,11 +203,16 @@ def get_click_count_api():
     """API endpoint to retrieve the current click count."""
     return jsonify({'count': get_click_count()})
 
+@app.route('/get-accumulated-results', methods=['GET'])
+def get_accumulated_results_api():
+    """API endpoint to retrieve accumulated simulation results."""
+    results = get_accumulated_results()
+    return jsonify(results)
+
 # Home route
 @app.route('/', methods=['GET', 'POST'])
 def home():
     if request.method == 'POST':
-
         increment_click_count()
         # Get strength values from the form
         strength_values = {
@@ -210,6 +256,9 @@ def home():
         # Run simulation
         sorted_standings, simulated_standings, division_winners, game_results = run_single_simulation(teams, remaining_games)
         scenarios = playoff_scenarios(teams, remaining_games)
+
+        # Save simulation results
+        save_simulation_results(teams, scenarios, strength_values)
 
         return render_template('index.html', standings=sorted_standings, simulated_standings=simulated_standings, division_winners=division_winners, game_results=game_results, scenarios=scenarios, strength_values=strength_values, click_count=get_click_count())
 
