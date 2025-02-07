@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enter Scores</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            display: flex;
+            gap: 20px;
+        }
+        .games {
+            flex: 1;
+        }
+        .standings {
+            flex: 1;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .input-group {
+            margin-bottom: 10px;
+        }
+        .input-group label {
+            display: inline-block;
+            width: 100px;
+        }
+        .input-group input {
+            width: 60px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Enter Scores for Remaining Games</h1>
+    <div class="container">
+        <div class="games">
+            <form method="POST">
+                {% for i, (team1, team2) in enumerate(remaining_games) %}
+                <div class="input-group">
+                    <label>{{ team1 }} vs {{ team2 }}:</label>
+                    <input type="number" name="{{ team1 }}_score_{{ i }}" value="0" required>
+                    <input type="number" name="{{ team2 }}_score_{{ i }}" value="0" required>
+                </div>
+                {% endfor %}
+                <button type="submit">Update Standings</button>
+            </form>
+        </div>
+        <div class="standings">
+            <h2>Current Standings</h2>
+            <table>
+                <tr>
+                    <th>Team</th>
+                    <th>Wins</th>
+                    <th>Losses</th>
+                    <th>Run Diff</th>
+                </tr>
+                {% for team in sorted_standings %}
+                <tr>
+                    <td>{{ team }}</td>
+                    <td>{{ standings[team]['wins'] }}</td>
+                    <td>{{ standings[team]['losses'] }}</td>
+                    <td>{{ standings[team]['run_diff'] }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+</body>
+</html>
