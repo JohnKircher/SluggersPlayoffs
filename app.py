@@ -264,64 +264,69 @@ def home():
 
     return render_template('index.html', click_count=get_click_count())
 
-@app.route('/enter-scores', methods=['GET', 'POST'])
+
+base_standings = {
+    'Julian': {'wins': 5, 'losses': 3, 'run_diff': 15},
+    'BenT': {'wins': 5, 'losses': 3, 'run_diff': 12},
+    'BenR': {'wins': 5, 'losses': 3, 'run_diff': 22},
+    'Kircher': {'wins': 4, 'losses': 4, 'run_diff': -10},
+    'Carbone': {'wins': 4, 'losses': 4, 'run_diff': -1},
+    'HarryKirch': {'wins': 4, 'losses': 4, 'run_diff': -11},
+    'Jmo': {'wins': 2, 'losses': 6, 'run_diff': -14},
+    'Tom': {'wins': 3, 'losses': 5, 'run_diff': -13}
+}
+
+remaining_games = [
+    ('Julian', 'Tom'),
+    ('BenT', 'Kircher'),
+    ('Jmo', 'Carbone'),
+    ('BenR', 'HarryKirch'),
+    ('BenT', 'Julian'),
+    ('Kircher', 'Tom'),
+    ('HarryKirch', 'Jmo'),
+    ('BenR', 'Carbone')
+]
+
+@app.route('/enter-scores', methods=['GET'])
 def enter_scores():
-    # Define the base standings
-    base_standings = {
-        'Julian': {'wins': 5, 'losses': 3, 'run_diff': 15},
-        'BenT': {'wins': 5, 'losses': 3, 'run_diff': 12},
-        'BenR': {'wins': 5, 'losses': 3, 'run_diff': 22},
-        'Kircher': {'wins': 4, 'losses': 4, 'run_diff': -10},
-        'Carbone': {'wins': 4, 'losses': 4, 'run_diff': -1},
-        'HarryKirch': {'wins': 4, 'losses': 4, 'run_diff': -11},
-        'Jmo': {'wins': 2, 'losses': 6, 'run_diff': -14},
-        'Tom': {'wins': 3, 'losses': 5, 'run_diff': -13}
-    }
-
-    # Define the remaining games
-    remaining_games = [
-        ('Julian', 'Tom'),
-        ('BenT', 'Kircher'),
-        ('Jmo', 'Carbone'),
-        ('BenR', 'HarryKirch'),
-        ('BenT', 'Julian'),
-        ('Kircher', 'Tom'),
-        ('HarryKirch', 'Jmo'),
-        ('BenR', 'Carbone')
-    ]
-
-    if request.method == 'POST':
-        # Update standings based on the entered scores
-        standings = base_standings.copy()
-        for i, (team1, team2) in enumerate(remaining_games):
-            score1 = int(request.form[f'{team1}_score_{i}'])
-            score2 = int(request.form[f'{team2}_score_{i}'])
-            if score1 > score2:
-                standings[team1]['wins'] += 1
-                standings[team2]['losses'] += 1
-            else:
-                standings[team2]['wins'] += 1
-                standings[team1]['losses'] += 1
-            standings[team1]['run_diff'] += (score1 - score2)
-            standings[team2]['run_diff'] += (score2 - score1)
-        
-        # Sort the standings
-        sorted_standings = sorted(standings.keys(), key=lambda x: (standings[x]['wins'], standings[x]['run_diff']), reverse=True)
-        return render_template(
-            'enter_scores.html',
-            standings=standings,
-            sorted_standings=sorted_standings,
-            remaining_games=list(enumerate(remaining_games)),  # Enumerate before passing to Jinja2
-            scores_entered=True
-        )
-    
     return render_template(
         'enter_scores.html',
         standings=base_standings,
         sorted_standings=sorted(base_standings.keys(), key=lambda x: (base_standings[x]['wins'], base_standings[x]['run_diff']), reverse=True),
-        remaining_games=list(enumerate(remaining_games)),  # Fix enumerate issue
-        scores_entered=False
+        remaining_games=list(enumerate(remaining_games))
     )
+
+@app.route('/update-score', methods=['POST'])
+def update_score():
+    data = request.get_json()
+    team1, team2 = data['team1'], data['team2']
+    score1, score2 = int(data['score1']), int(data['score2'])
+    index = data['index']
+
+    # Copy base standings
+    standings = base_standings.copy()
+
+    # Recalculate standings based on updated scores
+    for i, (t1, t2) in enumerate(remaining_games):
+        if i == index:
+            if score1 > score2:
+                standings[t1]['wins'] += 1
+                standings[t2]['losses'] += 1
+            else:
+                standings[t2]['wins'] += 1
+                standings[t1]['losses'] += 1
+            standings[t1]['run_diff'] += (score1 - score2)
+            standings[t2]['run_diff'] += (score2 - score1)
+
+    # Sort standings
+    sorted_standings = sorted(standings.keys(), key=lambda x: (standings[x]['wins'], standings[x]['run_diff']), reverse=True)
+
+    # Render the updated standings table
+    standings_html = render_template('standings_table.html', standings=standings, sorted_standings=sorted_standings)
+
+    return jsonify({'standings_html': standings_html})
+
+
 
 if __name__ == '__main__':
     app.run(debug=True)

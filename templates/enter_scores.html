@@ -48,39 +48,68 @@
     <h1>Enter Scores for Remaining Games</h1>
     <div class="container">
         <div class="games">
-            <form method="POST">
+            <form id="score-form">
                 {% for i, game in remaining_games %}
                     {% set team1, team2 = game %}
                     <div class="input-group">
                         <label>{{ team1 }} vs {{ team2 }}:</label>
                         <input type="number" name="{{ team1 }}_score_{{ i }}" 
-                               value="{{ request.form.get(team1 ~ '_score_' ~ i, 0) }}" required>
+                               value="{{ request.form.get(team1 ~ '_score_' ~ i, 0) }}" required
+                               oninput="updateScore('{{ team1 }}', '{{ team2 }}', {{ i }})">
                         <input type="number" name="{{ team2 }}_score_{{ i }}" 
-                               value="{{ request.form.get(team2 ~ '_score_' ~ i, 0) }}" required>
+                               value="{{ request.form.get(team2 ~ '_score_' ~ i, 0) }}" required
+                               oninput="updateScore('{{ team1 }}', '{{ team2 }}', {{ i }})">
                     </div>
                 {% endfor %}
-                <button type="submit">Update Standings</button>
             </form>
         </div>
         <div class="standings">
             <h2>Current Standings</h2>
-            <table>
-                <tr>
-                    <th>Team</th>
-                    <th>Wins</th>
-                    <th>Losses</th>
-                    <th>Run Diff</th>
-                </tr>
-                {% for team in sorted_standings %}
-                <tr>
-                    <td>{{ team }}</td>
-                    <td>{{ standings[team]['wins'] }}</td>
-                    <td>{{ standings[team]['losses'] }}</td>
-                    <td>{{ standings[team]['run_diff'] }}</td>
-                </tr>
-                {% endfor %}
-            </table>
+            <div id="standings-table">
+                <table>
+                    <tr>
+                        <th>Team</th>
+                        <th>Wins</th>
+                        <th>Losses</th>
+                        <th>Run Diff</th>
+                    </tr>
+                    {% for team in sorted_standings %}
+                    <tr>
+                        <td>{{ team }}</td>
+                        <td>{{ standings[team]['wins'] }}</td>
+                        <td>{{ standings[team]['losses'] }}</td>
+                        <td>{{ standings[team]['run_diff'] }}</td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
         </div>
     </div>
+
+    <script>
+        function updateScore(team1, team2, index) {
+            let score1 = document.querySelector(`input[name='${team1}_score_${index}']`).value;
+            let score2 = document.querySelector(`input[name='${team2}_score_${index}']`).value;
+            
+            fetch('/update-score', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    team1: team1,
+                    team2: team2,
+                    score1: score1,
+                    score2: score2,
+                    index: index
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('standings-table').innerHTML = data.standings_html;
+            })
+            .catch(error => console.error('Error updating score:', error));
+        }
+    </script>
 </body>
 </html>
