@@ -287,8 +287,8 @@
         <div class="box game-results" id="game-results">
             <div class="toggle-header" onclick="toggleSection('game-results')">Simulated Game Results</div>
             <div class="content">
-                {% for i in range(12) %}
-                    {% if i == 0 %}<h3>Thursday Week 4</h3>{% elif i == 4 %}<h3>Tuesday Week 5</h3>{% elif i == 8 %}<h3>Thursday Week 5</h3>{% endif %}
+                {% for i in range(8) %}
+                    {% if i == 0 %}<h3>Tuesday Week 4</h3>{% elif i == 4 %}<h3>Thursday Week 5</h3>{% endif %}
                     {% set parts = game_results[i].split(' ') %}
                     <p><span class="team">{{ parts[0] }}</span> beats <span class="team">{{ parts[2] }}</span> by <span class="score">{{ parts[4] }}</span> runs</p>
                 {% endfor %}
