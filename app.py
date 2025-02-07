@@ -307,9 +307,21 @@ def enter_scores():
         
         # Sort the standings
         sorted_standings = sorted(standings.keys(), key=lambda x: (standings[x]['wins'], standings[x]['run_diff']), reverse=True)
-        return render_template('enter_scores.html', standings=standings, sorted_standings=sorted_standings, remaining_games=remaining_games, scores_entered=True)
+        return render_template(
+            'enter_scores.html',
+            standings=standings,
+            sorted_standings=sorted_standings,
+            remaining_games=list(enumerate(remaining_games)),  # Enumerate before passing to Jinja2
+            scores_entered=True
+        )
     
-    return render_template('enter_scores.html', standings=base_standings, sorted_standings=sorted(base_standings.keys(), key=lambda x: (base_standings[x]['wins'], base_standings[x]['run_diff']), reverse=True), remaining_games=remaining_games, scores_entered=False)
+    return render_template(
+        'enter_scores.html',
+        standings=base_standings,
+        sorted_standings=sorted(base_standings.keys(), key=lambda x: (base_standings[x]['wins'], base_standings[x]['run_diff']), reverse=True),
+        remaining_games=list(enumerate(remaining_games)),  # Fix enumerate issue
+        scores_entered=False
+    )
 
 if __name__ == '__main__':
     app.run(debug=True)

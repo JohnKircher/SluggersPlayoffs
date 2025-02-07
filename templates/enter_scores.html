@@ -49,12 +49,13 @@
     <div class="container">
         <div class="games">
             <form method="POST">
-                {% for i, (team1, team2) in enumerate(remaining_games) %}
-                <div class="input-group">
-                    <label>{{ team1 }} vs {{ team2 }}:</label>
-                    <input type="number" name="{{ team1 }}_score_{{ i }}" value="0" required>
-                    <input type="number" name="{{ team2 }}_score_{{ i }}" value="0" required>
-                </div>
+                {% for i, game in remaining_games %}
+                    {% set team1, team2 = game %}
+                    <div class="input-group">
+                        <label>{{ team1 }} vs {{ team2 }}:</label>
+                        <input type="number" name="{{ team1 }}_score_{{ i }}" value="0" required>
+                        <input type="number" name="{{ team2 }}_score_{{ i }}" value="0" required>
+                    </div>
                 {% endfor %}
                 <button type="submit">Update Standings</button>
             </form>
