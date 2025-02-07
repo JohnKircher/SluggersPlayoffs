@@ -287,6 +287,8 @@ remaining_games = [
     ('BenR', 'Carbone')
 ]
 
+previous_scores = {i: (0, 0) for i in range(len(remaining_games))}
+
 @app.route('/enter-scores', methods=['GET'])
 def enter_scores():
     return render_template(
@@ -300,32 +302,47 @@ def enter_scores():
 def update_score():
     data = request.get_json()
     team1, team2 = data['team1'], data['team2']
-    score1, score2 = int(data['score1']), int(data['score2'])
+    new_score1, new_score2 = int(data['score1']), int(data['score2'])
     index = data['index']
 
-    # Copy base standings
+    # Copy the base standings to avoid modifying the original
     standings = base_standings.copy()
 
-    # Recalculate standings based on updated scores
-    for i, (t1, t2) in enumerate(remaining_games):
-        if i == index:
-            if score1 > score2:
-                standings[t1]['wins'] += 1
-                standings[t2]['losses'] += 1
-            else:
-                standings[t2]['wins'] += 1
-                standings[t1]['losses'] += 1
-            standings[t1]['run_diff'] += (score1 - score2)
-            standings[t2]['run_diff'] += (score2 - score1)
+    # Retrieve the previous score for this game
+    old_score1, old_score2 = previous_scores.get(index, (0, 0))
+
+    # Adjust standings by first **removing** the old game result
+    if old_score1 > old_score2:  # Old winner
+        standings[team1]['wins'] -= 1
+        standings[team2]['losses'] -= 1
+    elif old_score2 > old_score1:
+        standings[team2]['wins'] -= 1
+        standings[team1]['losses'] -= 1
+
+    standings[team1]['run_diff'] -= (old_score1 - old_score2)
+    standings[team2]['run_diff'] -= (old_score2 - old_score1)
+
+    # Now **apply** the new score
+    if new_score1 > new_score2:  # New winner
+        standings[team1]['wins'] += 1
+        standings[team2]['losses'] += 1
+    elif new_score2 > new_score1:
+        standings[team2]['wins'] += 1
+        standings[team1]['losses'] += 1
+
+    standings[team1]['run_diff'] += (new_score1 - new_score2)
+    standings[team2]['run_diff'] += (new_score2 - new_score1)
+
+    # Save the new score
+    previous_scores[index] = (new_score1, new_score2)
 
     # Sort standings
     sorted_standings = sorted(standings.keys(), key=lambda x: (standings[x]['wins'], standings[x]['run_diff']), reverse=True)
 
-    # Render the updated standings table
+    # Render updated standings table
     standings_html = render_template('standings_table.html', standings=standings, sorted_standings=sorted_standings)
 
     return jsonify({'standings_html': standings_html})
-
 
 
 if __name__ == '__main__':
