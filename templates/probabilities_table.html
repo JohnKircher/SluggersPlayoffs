@@ -1,0 +1,22 @@
+<table>
+    <tr>
+        <th>Team</th>
+        <th>Clinch Bye (%)</th>
+        <th>Make Playoffs (%)</th>
+        <th>Eliminated (%)</th>
+    </tr>
+    {% for team, values in probabilities.items() %}
+    <tr>
+        <td>{{ team }}</td>
+        <td class="{% if values.clinch_bye == 1.0 %}highlight-gold{% endif %}">
+            {{ "%.2f"|format(values.clinch_bye * 100) }}%
+        </td>
+        <td class="{% if values.clinch_playoffs == 1.0 and values.clinch_bye < 1.0 %}highlight-green{% endif %}">
+            {{ "%.2f"|format(values.clinch_playoffs * 100) }}%
+        </td>
+        <td class="{% if values.miss_playoffs == 1.0 %}highlight-red{% endif %}">
+            {{ "%.2f"|format(values.miss_playoffs * 100) }}%
+        </td>
+    </tr>
+    {% endfor %}
+</table>

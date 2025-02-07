@@ -199,6 +199,41 @@ def playoff_scenarios(teams, remaining_games, num_simulations=10000):
     
     return scenarios
 
+def calculate_live_probabilities(standings):
+    """
+    Determines playoff probabilities based on **current standings and entered scores**.
+    If a game is still 0-0, it is ignored.
+    """
+    divisions = {
+        'Division A': ['BenT', 'Tom', 'Julian', 'Kircher'],
+        'Division B': ['Jmo', 'BenR', 'Carbone', 'HarryKirch']
+    }
+    probabilities = {team: {'clinch_bye': 0, 'clinch_playoffs': 0, 'miss_playoffs': 0} for team in standings}
+
+    # Determine current division leaders
+    division_winners = {}
+    wildcards = []
+
+    for division, teams_in_div in divisions.items():
+        sorted_teams = sorted(teams_in_div, key=lambda x: (standings[x]['wins'], standings[x]['run_diff']), reverse=True)
+        division_winners[division] = sorted_teams[0]  # Best team in division clinches a bye
+        wildcards.extend(sorted_teams[1:])  # Remaining teams fight for wildcards
+
+    sorted_wildcards = sorted(wildcards, key=lambda x: (standings[x]['wins'], standings[x]['run_diff']), reverse=True)
+    playoff_teams = list(division_winners.values()) + sorted_wildcards[:4]
+
+    # Update probabilities
+    for team in standings:
+        if team in division_winners.values():
+            probabilities[team]['clinch_bye'] = 1.0
+        elif team in playoff_teams:
+            probabilities[team]['clinch_playoffs'] = 1.0
+        else:
+            probabilities[team]['miss_playoffs'] = 1.0
+
+    return probabilities
+
+
 @app.route('/get-click-count', methods=['GET'])
 def get_click_count_api():
     """API endpoint to retrieve the current click count."""
@@ -292,12 +327,17 @@ previous_scores = {i: (0, 0) for i in range(len(remaining_games))}
 
 @app.route('/enter-scores', methods=['GET'])
 def enter_scores():
+    # Compute initial probabilities based on base_standings
+    probabilities = calculate_live_probabilities(base_standings)
+
     return render_template(
         'enter_scores.html',
         standings=base_standings,
         sorted_standings=sorted(base_standings.keys(), key=lambda x: (base_standings[x]['wins'], base_standings[x]['run_diff']), reverse=True),
-        remaining_games=list(enumerate(remaining_games))
+        remaining_games=list(enumerate(remaining_games)),
+        probabilities=probabilities  # <- Ensure probabilities is passed
     )
+
 
 @app.route('/update-score', methods=['POST'])
 def update_score():
@@ -340,27 +380,48 @@ def update_score():
     # Sort standings
     sorted_standings = sorted(standings.keys(), key=lambda x: (standings[x]['wins'], standings[x]['run_diff']), reverse=True)
 
-    # Render updated standings table
-    standings_html = render_template('standings_table.html', standings=standings, sorted_standings=sorted_standings)
+    # Compute **live probabilities** based on entered scores
+    probabilities = calculate_live_probabilities(standings)
 
-    return jsonify({'standings_html': standings_html})
+    # Render updated tables
+    standings_html = render_template('standings_table.html', standings=standings, sorted_standings=sorted_standings)
+    probabilities_html = render_template('probabilities_table.html', probabilities=probabilities)
+
+    return jsonify({'standings_html': standings_html, 'probabilities_html': probabilities_html})
 
 
 @app.route('/reset-scores', methods=['POST'])
 def reset_scores():
-    global previous_scores  # Reset all stored scores
+    global previous_scores, base_standings  # Ensure global variables are reset
+
+    # Reset previous scores
     previous_scores = {i: (0, 0) for i in range(len(remaining_games))}
 
-    # Deep copy base_standings to reset standings completely
-    standings = copy.deepcopy(base_standings)
+    # Fully reset base_standings to original values
+    base_standings = {
+        'Julian': {'wins': 5, 'losses': 3, 'run_diff': 15},
+        'BenT': {'wins': 5, 'losses': 3, 'run_diff': 12},
+        'BenR': {'wins': 5, 'losses': 3, 'run_diff': 22},
+        'Kircher': {'wins': 4, 'losses': 4, 'run_diff': -10},
+        'Carbone': {'wins': 4, 'losses': 4, 'run_diff': -1},
+        'HarryKirch': {'wins': 4, 'losses': 4, 'run_diff': -11},
+        'Jmo': {'wins': 2, 'losses': 6, 'run_diff': -14},
+        'Tom': {'wins': 3, 'losses': 5, 'run_diff': -13}
+    }
+
+    # Compute new probabilities based on the reset standings
+    probabilities = calculate_live_probabilities(base_standings)
 
     # Sort standings
-    sorted_standings = sorted(standings.keys(), key=lambda x: (standings[x]['wins'], standings[x]['run_diff']), reverse=True)
+    sorted_standings = sorted(base_standings.keys(), key=lambda x: (base_standings[x]['wins'], base_standings[x]['run_diff']), reverse=True)
 
-    # Render the updated standings table
-    standings_html = render_template('standings_table.html', standings=standings, sorted_standings=sorted_standings)
+    # Render updated tables
+    standings_html = render_template('standings_table.html', standings=base_standings, sorted_standings=sorted_standings)
+    probabilities_html = render_template('probabilities_table.html', probabilities=probabilities)
 
-    return jsonify({'standings_html': standings_html})
+    return jsonify({'standings_html': standings_html, 'probabilities_html': probabilities_html})
+
+
 
 
 if __name__ == '__main__':

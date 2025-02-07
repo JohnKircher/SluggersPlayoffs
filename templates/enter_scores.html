@@ -42,6 +42,38 @@
         .input-group input {
             width: 60px;
         }
+        .reset-button {
+            margin-top: 20px;
+            background: red;
+            color: white;
+            padding: 10px;
+            border: none;
+            cursor: pointer;
+        }
+
+        /* Center probability table */
+        .probabilities-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 40px;
+        }
+        
+
+        .highlight-gold {
+    background-color: #FFD700; /* Gold */
+    font-weight: bold;
+}
+
+.highlight-green {
+    background-color: #90EE90; /* Light Green */
+    font-weight: bold;
+}
+
+.highlight-red {
+    background-color: #FF6347; /* Tomato Red */
+    font-weight: bold;
+}
     </style>
 </head>
 <body>
@@ -62,9 +94,7 @@
                     </div>
                 {% endfor %}
             </form>
-            <button onclick="resetScores()" style="margin-top: 20px; background: red; color: white; padding: 10px; border: none; cursor: pointer;">
-                Reset Standings & Scores
-            </button>
+            <button class="reset-button" onclick="resetScores()">Reset Standings & Scores</button>
         </div>
         <div class="standings">
             <h2>Current Standings</h2>
@@ -74,43 +104,71 @@
         </div>
     </div>
 
+    <!-- Centered Probability Table -->
+    <div class="probabilities-container">
+        <div>
+            <h2 style="text-align: center;">Live Playoff Probabilities</h2>
+            <div id="probabilities-table">
+                {% include 'probabilities_table.html' %}
+            </div>
+        </div>
+    </div>
+
     <script>
         function updateScore(team1, team2, index) {
-            let score1 = document.querySelector(`input[name='${team1}_score_${index}']`).value;
-            let score2 = document.querySelector(`input[name='${team2}_score_${index}']`).value;
-            
-            fetch('/update-score', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    team1: team1,
-                    team2: team2,
-                    score1: score1,
-                    score2: score2,
-                    index: index
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('standings-table').innerHTML = data.standings_html;
-                document.getElementById('probabilities-table').innerHTML = data.probabilities_html;
-            })
-            .catch(error => console.error('Error updating score:', error));
+    let score1 = document.querySelector(`input[name='${team1}_score_${index}']`).value;
+    let score2 = document.querySelector(`input[name='${team2}_score_${index}']`).value;
+
+    fetch('/update-score', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            team1: team1,
+            team2: team2,
+            score1: score1,
+            score2: score2,
+            index: index
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('standings-table').innerHTML = data.standings_html;
+        document.getElementById('probabilities-table').innerHTML = data.probabilities_html;
+    })
+    .catch(error => console.error('Error updating score:', error));
+}
+
+function resetScores() {
+    fetch('/reset-scores', {
+        method: 'POST'
+    })
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('standings-table').innerHTML = data.standings_html;
+        document.getElementById('probabilities-table').innerHTML = data.probabilities_html;
+
+        // Reset all input fields to 0
+        document.querySelectorAll("input[type='number']").forEach(input => input.value = 0);
+    })
+    .catch(error => console.error('Error resetting scores:', error));
+}
+
+
+        function highlight100PercentValues() {
+            // Find all probability table cells and highlight if the text is "100%"
+            document.querySelectorAll('#probabilities-table td').forEach(cell => {
+                if (cell.innerText.trim() === "100%") {
+                    cell.classList.add('highlight-green');
+                } else {
+                    cell.classList.remove('highlight-green');
+                }
+            });
         }
 
-        function resetScores() {
-            fetch('/reset-scores', {
-                method: 'POST'
-            })
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('standings-table').innerHTML = data.standings_html;
-                document.querySelectorAll("input[type='number']").forEach(input => input.value = 0);
-            })
-            .catch(error => console.error('Error resetting scores:', error));
-        }
+        // Run highlighting on initial load in case there are already 100% values
+        document.addEventListener('DOMContentLoaded', highlight100PercentValues);
     </script>
 </body>
 </html>
