@@ -228,21 +228,21 @@ def home():
 
         # Define teams with strength values
         teams = {
-            'Julian': {'wins': 5, 'losses': 2, 'run_diff': 19, 'strength': strength_values['Julian']},
-            'BenT': {'wins': 5, 'losses': 2, 'run_diff': 13, 'strength': strength_values['BenT']},
-            'BenR': {'wins': 4, 'losses': 3, 'run_diff': 18, 'strength': strength_values['BenR']},
-            'Kircher': {'wins': 4, 'losses': 3, 'run_diff': -5, 'strength': strength_values['Kircher']},
-            'Carbone': {'wins': 3, 'losses': 4, 'run_diff': -6, 'strength': strength_values['Carbone']},
-            'HarryKirch': {'wins': 3, 'losses': 4, 'run_diff': -12, 'strength': strength_values['HarryKirch']},
-            'Jmo': {'wins': 2, 'losses': 5, 'run_diff': -9, 'strength': strength_values['Jmo']},
-            'Tom': {'wins': 2, 'losses': 5, 'run_diff': -18, 'strength': strength_values['Tom']}
+            'Julian': {'wins': 5, 'losses': 3, 'run_diff': 15, 'strength': strength_values['Julian']},
+            'BenT': {'wins': 5, 'losses': 3, 'run_diff': 12, 'strength': strength_values['BenT']},
+            'BenR': {'wins': 5, 'losses': 3, 'run_diff': 22, 'strength': strength_values['BenR']},
+            'Kircher': {'wins': 4, 'losses': 4, 'run_diff': -10, 'strength': strength_values['Kircher']},
+            'Carbone': {'wins': 4, 'losses': 4, 'run_diff': -1, 'strength': strength_values['Carbone']},
+            'HarryKirch': {'wins': 4, 'losses': 4, 'run_diff': -11, 'strength': strength_values['HarryKirch']},
+            'Jmo': {'wins': 2, 'losses': 6, 'run_diff': -14, 'strength': strength_values['Jmo']},
+            'Tom': {'wins': 3, 'losses': 5, 'run_diff': -13, 'strength': strength_values['Tom']}
         }
 
         remaining_games = [
-            ('HarryKirch', 'BenT'),
-            ('Jmo', 'Tom'),
-            ('Julian', 'BenR'),
-            ('Carbone', 'Kircher'),
+            #('HarryKirch', 'BenT'),
+            #('Jmo', 'Tom'),
+            #('Julian', 'BenR'),
+            #('Carbone', 'Kircher'),
             ('Julian', 'Tom'),
             ('BenT', 'Kircher'),
             ('Jmo', 'Carbone'),
