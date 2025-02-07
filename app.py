@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, jsonify
 import random
 import sqlite3
 from collections import defaultdict
+import copy
 
 app = Flask(__name__)
 
@@ -350,8 +351,8 @@ def reset_scores():
     global previous_scores  # Reset all stored scores
     previous_scores = {i: (0, 0) for i in range(len(remaining_games))}
 
-    # Reset standings to original values
-    standings = base_standings.copy()
+    # Deep copy base_standings to reset standings completely
+    standings = copy.deepcopy(base_standings)
 
     # Sort standings
     sorted_standings = sorted(standings.keys(), key=lambda x: (standings[x]['wins'], standings[x]['run_diff']), reverse=True)
