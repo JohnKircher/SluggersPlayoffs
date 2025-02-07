@@ -62,26 +62,14 @@
                     </div>
                 {% endfor %}
             </form>
+            <button onclick="resetScores()" style="margin-top: 20px; background: red; color: white; padding: 10px; border: none; cursor: pointer;">
+                Reset Standings & Scores
+            </button>
         </div>
         <div class="standings">
             <h2>Current Standings</h2>
             <div id="standings-table">
-                <table>
-                    <tr>
-                        <th>Team</th>
-                        <th>Wins</th>
-                        <th>Losses</th>
-                        <th>Run Diff</th>
-                    </tr>
-                    {% for team in sorted_standings %}
-                    <tr>
-                        <td>{{ team }}</td>
-                        <td>{{ standings[team]['wins'] }}</td>
-                        <td>{{ standings[team]['losses'] }}</td>
-                        <td>{{ standings[team]['run_diff'] }}</td>
-                    </tr>
-                    {% endfor %}
-                </table>
+                {% include 'standings_table.html' %}
             </div>
         </div>
     </div>
@@ -107,8 +95,21 @@
             .then(response => response.json())
             .then(data => {
                 document.getElementById('standings-table').innerHTML = data.standings_html;
+                document.getElementById('probabilities-table').innerHTML = data.probabilities_html;
             })
             .catch(error => console.error('Error updating score:', error));
+        }
+
+        function resetScores() {
+            fetch('/reset-scores', {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('standings-table').innerHTML = data.standings_html;
+                document.querySelectorAll("input[type='number']").forEach(input => input.value = 0);
+            })
+            .catch(error => console.error('Error resetting scores:', error));
         }
     </script>
 </body>

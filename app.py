@@ -345,5 +345,22 @@ def update_score():
     return jsonify({'standings_html': standings_html})
 
 
+@app.route('/reset-scores', methods=['POST'])
+def reset_scores():
+    global previous_scores  # Reset all stored scores
+    previous_scores = {i: (0, 0) for i in range(len(remaining_games))}
+
+    # Reset standings to original values
+    standings = base_standings.copy()
+
+    # Sort standings
+    sorted_standings = sorted(standings.keys(), key=lambda x: (standings[x]['wins'], standings[x]['run_diff']), reverse=True)
+
+    # Render the updated standings table
+    standings_html = render_template('standings_table.html', standings=standings, sorted_standings=sorted_standings)
+
+    return jsonify({'standings_html': standings_html})
+
+
 if __name__ == '__main__':
     app.run(debug=True)
