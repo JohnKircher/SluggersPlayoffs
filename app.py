@@ -199,40 +199,96 @@ def playoff_scenarios(teams, remaining_games, num_simulations=10000):
     
     return scenarios
 
-def calculate_live_probabilities(standings):
+def calculate_live_probabilities(standings, remaining_games, previous_scores):
     """
-    Determines playoff probabilities based on **current standings and entered scores**.
+    Determines playoff probabilities based on current standings and entered scores.
     If a game is still 0-0, it is ignored.
     """
     divisions = {
         'Division A': ['BenT', 'Tom', 'Julian', 'Kircher'],
         'Division B': ['Jmo', 'BenR', 'Carbone', 'HarryKirch']
     }
-    probabilities = {team: {'clinch_bye': 0, 'clinch_playoffs': 0, 'miss_playoffs': 0} for team in standings}
+    scenarios = defaultdict(lambda: {'clinch_bye': 0, 'clinch_playoffs': 0, 'miss_playoffs': 0})
 
-    # Determine current division leaders
-    division_winners = {}
-    wildcards = []
-
-    for division, teams_in_div in divisions.items():
-        sorted_teams = sorted(teams_in_div, key=lambda x: (standings[x]['wins'], standings[x]['run_diff']), reverse=True)
-        division_winners[division] = sorted_teams[0]  # Best team in division clinches a bye
-        wildcards.extend(sorted_teams[1:])  # Remaining teams fight for wildcards
-
-    sorted_wildcards = sorted(wildcards, key=lambda x: (standings[x]['wins'], standings[x]['run_diff']), reverse=True)
-    playoff_teams = list(division_winners.values()) + sorted_wildcards[:4]
-
-    # Update probabilities
-    for team in standings:
-        if team in division_winners.values():
-            probabilities[team]['clinch_bye'] = 1.0
-        elif team in playoff_teams:
-            probabilities[team]['clinch_playoffs'] = 1.0
+    # Determine which games have been played
+    played_games = []
+    unplayed_games = []
+    for i, (team1, team2) in enumerate(remaining_games):
+        score1, score2 = previous_scores.get(i, (0, 0))
+        if score1 != 0 or score2 != 0:
+            played_games.append((team1, team2, score1, score2))
         else:
-            probabilities[team]['miss_playoffs'] = 1.0
+            unplayed_games.append((team1, team2))
 
-    return probabilities
+    # Run simulations
+    num_simulations = 10000
+    for _ in range(num_simulations):
+        # Copy the current standings
+        simulated_standings = copy.deepcopy(standings)
 
+        # Apply the results of played games
+        for team1, team2, score1, score2 in played_games:
+            if score1 > score2:
+                simulated_standings[team1]['wins'] += 1
+                simulated_standings[team2]['losses'] += 1
+                simulated_standings[team1]['run_diff'] += (score1 - score2)
+                simulated_standings[team2]['run_diff'] -= (score1 - score2)
+            else:
+                simulated_standings[team2]['wins'] += 1
+                simulated_standings[team1]['losses'] += 1
+                simulated_standings[team2]['run_diff'] += (score2 - score1)
+                simulated_standings[team1]['run_diff'] -= (score2 - score1)
+
+        # Simulate the unplayed games
+        for team1, team2 in unplayed_games:
+            #strength1 = simulated_standings[team1]['strength']
+            #strength2 = simulated_standings[team2]['strength']
+
+            strength1 = 1
+            strength2 = 1
+
+            prob_team1_wins = strength1 / (strength1 + strength2)
+            if random.random() < prob_team1_wins:
+                simulated_standings[team1]['wins'] += 1
+                simulated_standings[team2]['losses'] += 1
+                run_diff = random.choices(range(1, 11), weights=range(10, 0, -1), k=1)[0]
+                simulated_standings[team1]['run_diff'] += run_diff
+                simulated_standings[team2]['run_diff'] -= run_diff
+            else:
+                simulated_standings[team2]['wins'] += 1
+                simulated_standings[team1]['losses'] += 1
+                run_diff = random.choices(range(1, 11), weights=range(10, 0, -1), k=1)[0]
+                simulated_standings[team2]['run_diff'] += run_diff
+                simulated_standings[team1]['run_diff'] -= run_diff
+
+        # Determine division winners and wildcards
+        division_winners = {}
+        wildcards = []
+        for division, teams_in_div in divisions.items():
+            sorted_teams = sorted(teams_in_div, key=lambda x: (simulated_standings[x]['wins'], simulated_standings[x]['run_diff']), reverse=True)
+            division_winners[division] = sorted_teams[0]
+            wildcards.extend(sorted_teams[1:])
+
+        sorted_wildcards = sorted(wildcards, key=lambda x: (simulated_standings[x]['wins'], simulated_standings[x]['run_diff']), reverse=True)
+        playoff_teams = list(division_winners.values()) + sorted_wildcards[:4]
+
+        # Update scenarios for each team
+        for team in simulated_standings:
+            if team in division_winners.values():
+                scenarios[team]['clinch_bye'] += 1
+            elif team in playoff_teams:
+                scenarios[team]['clinch_playoffs'] += 1
+            else:
+                scenarios[team]['miss_playoffs'] += 1
+
+    # Normalize the scenario counts to probabilities
+    for team in scenarios:
+        total = num_simulations
+        scenarios[team]['clinch_bye'] /= total
+        scenarios[team]['clinch_playoffs'] /= total
+        scenarios[team]['miss_playoffs'] /= total
+
+    return scenarios
 
 @app.route('/get-click-count', methods=['GET'])
 def get_click_count_api():
@@ -328,7 +384,8 @@ previous_scores = {i: (0, 0) for i in range(len(remaining_games))}
 @app.route('/enter-scores', methods=['GET'])
 def enter_scores():
     # Compute initial probabilities based on base_standings
-    probabilities = calculate_live_probabilities(base_standings)
+    probabilities = calculate_live_probabilities(base_standings, remaining_games, previous_scores)
+
 
     return render_template(
         'enter_scores.html',
@@ -346,49 +403,45 @@ def update_score():
     new_score1, new_score2 = int(data['score1']), int(data['score2'])
     index = data['index']
 
-    # Copy the base standings to avoid modifying the original
-    standings = base_standings.copy()
-
     # Retrieve the previous score for this game
     old_score1, old_score2 = previous_scores.get(index, (0, 0))
 
     # Adjust standings by first **removing** the old game result
     if old_score1 > old_score2:  # Old winner
-        standings[team1]['wins'] -= 1
-        standings[team2]['losses'] -= 1
+        base_standings[team1]['wins'] -= 1
+        base_standings[team2]['losses'] -= 1
     elif old_score2 > old_score1:
-        standings[team2]['wins'] -= 1
-        standings[team1]['losses'] -= 1
+        base_standings[team2]['wins'] -= 1
+        base_standings[team1]['losses'] -= 1
 
-    standings[team1]['run_diff'] -= (old_score1 - old_score2)
-    standings[team2]['run_diff'] -= (old_score2 - old_score1)
+    base_standings[team1]['run_diff'] -= (old_score1 - old_score2)
+    base_standings[team2]['run_diff'] -= (old_score2 - old_score1)
 
     # Now **apply** the new score
     if new_score1 > new_score2:  # New winner
-        standings[team1]['wins'] += 1
-        standings[team2]['losses'] += 1
+        base_standings[team1]['wins'] += 1
+        base_standings[team2]['losses'] += 1
     elif new_score2 > new_score1:
-        standings[team2]['wins'] += 1
-        standings[team1]['losses'] += 1
+        base_standings[team2]['wins'] += 1
+        base_standings[team1]['losses'] += 1
 
-    standings[team1]['run_diff'] += (new_score1 - new_score2)
-    standings[team2]['run_diff'] += (new_score2 - new_score1)
+    base_standings[team1]['run_diff'] += (new_score1 - new_score2)
+    base_standings[team2]['run_diff'] += (new_score2 - new_score1)
 
     # Save the new score
     previous_scores[index] = (new_score1, new_score2)
 
     # Sort standings
-    sorted_standings = sorted(standings.keys(), key=lambda x: (standings[x]['wins'], standings[x]['run_diff']), reverse=True)
+    sorted_standings = sorted(base_standings.keys(), key=lambda x: (base_standings[x]['wins'], base_standings[x]['run_diff']), reverse=True)
 
     # Compute **live probabilities** based on entered scores
-    probabilities = calculate_live_probabilities(standings)
+    probabilities = calculate_live_probabilities(base_standings, remaining_games, previous_scores)
 
     # Render updated tables
-    standings_html = render_template('standings_table.html', standings=standings, sorted_standings=sorted_standings)
+    standings_html = render_template('standings_table.html', standings=base_standings, sorted_standings=sorted_standings)
     probabilities_html = render_template('probabilities_table.html', probabilities=probabilities)
 
     return jsonify({'standings_html': standings_html, 'probabilities_html': probabilities_html})
-
 
 @app.route('/reset-scores', methods=['POST'])
 def reset_scores():
@@ -410,7 +463,7 @@ def reset_scores():
     }
 
     # Compute new probabilities based on the reset standings
-    probabilities = calculate_live_probabilities(base_standings)
+    probabilities = calculate_live_probabilities(base_standings, remaining_games, previous_scores)
 
     # Sort standings
     sorted_standings = sorted(base_standings.keys(), key=lambda x: (base_standings[x]['wins'], base_standings[x]['run_diff']), reverse=True)
@@ -420,7 +473,6 @@ def reset_scores():
     probabilities_html = render_template('probabilities_table.html', probabilities=probabilities)
 
     return jsonify({'standings_html': standings_html, 'probabilities_html': probabilities_html})
-
 
 
 
