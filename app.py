@@ -203,6 +203,7 @@ def calculate_live_probabilities(standings, remaining_games, previous_scores):
     """
     Determines playoff probabilities based on current standings and entered scores.
     If a game is still 0-0, it is ignored.
+    If all games have been played, the playoff outcomes are calculated directly from the standings.
     """
     divisions = {
         'Division A': ['BenT', 'Tom', 'Julian', 'Kircher'],
@@ -220,13 +221,41 @@ def calculate_live_probabilities(standings, remaining_games, previous_scores):
         else:
             unplayed_games.append((team1, team2))
 
-    # Run simulations
+    # If all games have been played, calculate outcomes directly from standings
+    if not unplayed_games:
+        # Determine division winners (top team in each division gets a bye)
+        division_winners = {}
+        for division, teams_in_div in divisions.items():
+            sorted_teams = sorted(teams_in_div, key=lambda x: (standings[x]['wins'], standings[x]['run_diff']), reverse=True)
+            division_winners[division] = sorted_teams[0]  # Top team gets a bye
+
+        # Determine wildcard teams (next 4 teams across both divisions, excluding division winners)
+        all_teams = list(standings.keys())
+        # Remove division winners from the pool of teams
+        teams_eligible_for_wildcards = [team for team in all_teams if team not in division_winners.values()]
+        # Sort eligible teams by wins and run differential
+        sorted_wildcards = sorted(teams_eligible_for_wildcards, key=lambda x: (standings[x]['wins'], standings[x]['run_diff']), reverse=True)
+        # Select top 4 teams as wildcards
+        wildcard_teams = sorted_wildcards[:4]
+
+        # Update scenarios for each team
+        for team in standings:
+            if team in division_winners.values():
+                scenarios[team]['clinch_bye'] = 1.0
+            elif team in wildcard_teams:
+                scenarios[team]['clinch_playoffs'] = 1.0
+            else:
+                scenarios[team]['miss_playoffs'] = 1.0
+
+        return scenarios
+
+    # Otherwise, run simulations for unplayed games
     num_simulations = 10000
     for _ in range(num_simulations):
         # Copy the current standings
         simulated_standings = copy.deepcopy(standings)
 
-        # Apply the results of played games
+        # Apply the results of played games (no need to simulate these, as they are already updated)
         for team1, team2, score1, score2 in played_games:
             if score1 > score2:
                 simulated_standings[team1]['wins'] += 1
@@ -239,14 +268,10 @@ def calculate_live_probabilities(standings, remaining_games, previous_scores):
                 simulated_standings[team2]['run_diff'] += (score2 - score1)
                 simulated_standings[team1]['run_diff'] -= (score2 - score1)
 
-        # Simulate the unplayed games
+        # Simulate the unplayed games (only these need to be simulated)
         for team1, team2 in unplayed_games:
-            #strength1 = simulated_standings[team1]['strength']
-            #strength2 = simulated_standings[team2]['strength']
-
-            strength1 = 1
+            strength1 = 1  # Assuming equal strength for simplicity
             strength2 = 1
-
             prob_team1_wins = strength1 / (strength1 + strength2)
             if random.random() < prob_team1_wins:
                 simulated_standings[team1]['wins'] += 1
@@ -261,22 +286,26 @@ def calculate_live_probabilities(standings, remaining_games, previous_scores):
                 simulated_standings[team2]['run_diff'] += run_diff
                 simulated_standings[team1]['run_diff'] -= run_diff
 
-        # Determine division winners and wildcards
+        # Determine division winners (top team in each division gets a bye)
         division_winners = {}
-        wildcards = []
         for division, teams_in_div in divisions.items():
             sorted_teams = sorted(teams_in_div, key=lambda x: (simulated_standings[x]['wins'], simulated_standings[x]['run_diff']), reverse=True)
-            division_winners[division] = sorted_teams[0]
-            wildcards.extend(sorted_teams[1:])
+            division_winners[division] = sorted_teams[0]  # Top team gets a bye
 
-        sorted_wildcards = sorted(wildcards, key=lambda x: (simulated_standings[x]['wins'], simulated_standings[x]['run_diff']), reverse=True)
-        playoff_teams = list(division_winners.values()) + sorted_wildcards[:4]
+        # Determine wildcard teams (next 4 teams across both divisions, excluding division winners)
+        all_teams = list(simulated_standings.keys())
+        # Remove division winners from the pool of teams
+        teams_eligible_for_wildcards = [team for team in all_teams if team not in division_winners.values()]
+        # Sort eligible teams by wins and run differential
+        sorted_wildcards = sorted(teams_eligible_for_wildcards, key=lambda x: (simulated_standings[x]['wins'], simulated_standings[x]['run_diff']), reverse=True)
+        # Select top 4 teams as wildcards
+        wildcard_teams = sorted_wildcards[:4]
 
         # Update scenarios for each team
         for team in simulated_standings:
             if team in division_winners.values():
                 scenarios[team]['clinch_bye'] += 1
-            elif team in playoff_teams:
+            elif team in wildcard_teams:
                 scenarios[team]['clinch_playoffs'] += 1
             else:
                 scenarios[team]['miss_playoffs'] += 1
@@ -287,6 +316,10 @@ def calculate_live_probabilities(standings, remaining_games, previous_scores):
         scenarios[team]['clinch_bye'] /= total
         scenarios[team]['clinch_playoffs'] /= total
         scenarios[team]['miss_playoffs'] /= total
+
+    print("Standings:", standings)
+    print("Division Winners:", division_winners)
+    print("Wildcard Teams:", wildcard_teams)
 
     return scenarios
 
