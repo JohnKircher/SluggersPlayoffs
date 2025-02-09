@@ -85,11 +85,10 @@
                     <div class="input-group">
                         <label>{{ team1 }} vs {{ team2 }}:</label>
                         <input type="number" name="{{ team1 }}_score_{{ i }}" 
-                               value="{{ request.form.get(team1 ~ '_score_' ~ i, 0) }}" required
-                               oninput="updateScore('{{ team1 }}', '{{ team2 }}', {{ i }})">
+                               value="{{ request.form.get(team1 ~ '_score_' ~ i, 0) }}" required>
                         <input type="number" name="{{ team2 }}_score_{{ i }}" 
-                               value="{{ request.form.get(team2 ~ '_score_' ~ i, 0) }}" required
-                               oninput="updateScore('{{ team1 }}', '{{ team2 }}', {{ i }})">
+                               value="{{ request.form.get(team2 ~ '_score_' ~ i, 0) }}" required>
+                        <button type="button" onclick="updateScore('{{ team1 }}', '{{ team2 }}', {{ i }})">Update</button>
                     </div>
                 {% endfor %}
             </form>
@@ -117,32 +116,29 @@
         let debounceTimeout;
 
         function updateScore(team1, team2, index) {
-            clearTimeout(debounceTimeout);
-            debounceTimeout = setTimeout(() => {
-                let score1 = document.querySelector(`input[name='${team1}_score_${index}']`).value;
-                let score2 = document.querySelector(`input[name='${team2}_score_${index}']`).value;
+            let score1 = document.querySelector(`input[name='${team1}_score_${index}']`).value;
+            let score2 = document.querySelector(`input[name='${team2}_score_${index}']`).value;
 
-                fetch('/update-score', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        team1: team1,
-                        team2: team2,
-                        score1: score1,
-                        score2: score2,
-                        index: index
-                    })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById('standings-table').innerHTML = data.standings_html;
-                    document.getElementById('probabilities-table').innerHTML = data.probabilities_html;
-                })
-                .catch(error => console.error('Error updating score:', error));
-            }, 500); // Adjust the delay as needed
-        }
+            fetch('/update-score', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                team1: team1,
+                team2: team2,
+                score1: score1,
+                score2: score2,
+                index: index
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('standings-table').innerHTML = data.standings_html;
+            document.getElementById('probabilities-table').innerHTML = data.probabilities_html;
+        })
+        .catch(error => console.error('Error updating score:', error));
+    }
 
         
 
