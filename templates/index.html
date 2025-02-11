@@ -4,19 +4,118 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Baseball Simulation</title>
-    <a href="/enter-scores">Enter Scores</a>
-    <!-- Click Counter Display -->
-
-    <!-- Include Chart.js -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-    <div id="click-counter" style="font-size: 1.5em; font-weight: bold; color: #ff4500; margin-bottom: 10px;">
-        Simulations Run: <span id="click-count">{{ click_count }}</span>
+    <style>
+        .highlight-gold { background-color: #FFD700; font-weight: bold; }
+        .highlight-green { background-color: #90EE90; font-weight: bold; }
+        .highlight-red { background-color: #FF6347; font-weight: bold; }
+        /* Ensure table borders are visible */
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 p-6">
+    <div class="max-w-7xl mx-auto">
+        <!-- Header Section -->
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-3xl font-bold text-gray-800">Baseball Simulation</h1>
+            <a href="/enter-scores" class="text-lg text-blue-500 hover:text-blue-700 font-semibold">
+                Week 5 Manual Score Entry Simulator
+            </a>
+        </div>
+    
+        <!-- Click Counter -->
+        <div id="click-counter" class="text-xl font-bold text-orange-600 mb-6">
+            Simulations Run: <span id="click-count">{{ click_count }}</span>
+        </div>
     </div>
 
-    
+       <!-- Grid Layout for Input Team Strengths and Standings -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <!-- Input Team Strengths -->
+    <div class="bg-blue-50 p-6 rounded-lg shadow-md"> <!-- Changed to bg-blue-50 -->
+        <h2 class="text-xl font-semibold text-gray-700 mb-4">Input Team Strengths</h2>
+        <form method="POST" class="space-y-4">
+            {% for team in ["Julian", "BenT", "BenR", "Kircher", "Carbone", "HarryKirch", "Jmo", "Tom"] %}
+                <div class="flex items-center space-x-4">
+                    <label class="w-32 text-gray-700">{{ team }}:</label>
+                    <input type="number" step="0.01" name="{{ team }}" value="{{ request.form.get(team, '') }}" class="w-32 p-2 border rounded" required>
+                </div>
+            {% endfor %}
+            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Run Simulation</button>
+        </form>
+    </div>
+
+    <!-- Division Winners and Final Standings -->
+    <div>
+        <!-- Division Winners -->
+        <div class="bg-blue-100 p-6 rounded-lg shadow-md mb-6"> <!-- Changed to bg-blue-100 -->
+            <h2 class="text-xl font-semibold text-gray-700 mb-4">Division Winners (Clinched a Bye)</h2>
+            <div class="content">
+                {% for division, winner in division_winners.items() %}
+                    <p class="text-gray-700">{{ division }}: <span class="font-bold">{{ winner }}</span></p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Final Standings -->
+        <div class="bg-blue-50 p-6 rounded-lg shadow-md"> <!-- Changed to bg-blue-50 -->
+            <h2 class="text-xl font-semibold text-gray-700 mb-4">Final Standings</h2>
+            <div class="content">
+                {% include 'standings_table.html' %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Playoff Scenarios (Collapsible) -->
+<div class="mt-8 bg-blue-100 p-6 rounded-lg shadow-md"> <!-- Changed to bg-blue-100 -->
+    <h2 class="text-xl font-semibold text-gray-700 mb-4 cursor-pointer" onclick="toggleCollapse('playoff-scenarios')">
+        Playoff Scenarios (Probabilities) <span id="playoff-scenarios-arrow">▼</span>
+    </h2>
+    <div id="playoff-scenarios" class="content">
+        {% include 'probabilities_table.html' %}
+    </div>
+</div>
+
+        <!-- Simulated Game Results (Collapsible) -->
+        <div class="mt-8 bg-blue-100 p-6 rounded-lg shadow-md">
+    <h2 class="text-xl font-semibold text-gray-700 mb-4 cursor-pointer" onclick="toggleCollapse('simulated-game-results')">
+        Simulated Game Results <span id="simulated-game-results-arrow">▼</span>
+    </h2>
+    <div id="simulated-game-results" class="content" style="display: none;">
+        {% if game_results %}
+            {% for i in range(game_results|length) %}
+                {% if i == 0 %}<h3 class="text-lg font-semibold text-gray-700">Tuesday Week 4</h3>{% elif i == 4 %}<h3 class="text-lg font-semibold text-gray-700">Thursday Week 5</h3>{% endif %}
+                {% set parts = game_results[i].split(' ') %}
+                <p class="text-gray-700"><span class="font-bold">{{ parts[0] }}</span> beats <span class="font-bold">{{ parts[2] }}</span> by <span class="font-bold">{{ parts[4] }}</span> runs</p>
+                {% if not loop.last %}<br>{% endif %}
+            {% endfor %}
+        {% else %}
+            <p class="text-gray-700">No simulated game results available. Run a simulation to see results.</p>
+        {% endif %}
+    </div>
+</div>
+
+        <!-- Graph Container -->
+        <div class="mt-8 bg-white p-6 rounded-lg shadow-md">
+            <canvas id="resultsChart"></canvas>
+        </div>
+    </div>
 
     <script>
+        // JavaScript for updating click count and rendering the graph
         function updateClickCount() {
             fetch('/get-click-count')
                 .then(response => response.json())
@@ -26,7 +125,6 @@
                 .catch(error => console.error('Error fetching click count:', error));
         }
 
-        // Fetch accumulated results and render the graph
         function renderGraph() {
             fetch('/get-accumulated-results')
                 .then(response => response.json())
@@ -79,18 +177,12 @@
                             scales: {
                                 y: {
                                     beginAtZero: true,
-                                    title: {
-                                        display: true,
-                                        text: 'Probability (%)'
-                                    }
+                                    title: { display: true, text: 'Probability (%)' }
                                 },
                                 'strength-axis': {
                                     position: 'right',
                                     beginAtZero: true,
-                                    title: {
-                                        display: true,
-                                        text: 'Average Strength'
-                                    }
+                                    title: { display: true, text: 'Average Strength' }
                                 }
                             }
                         }
@@ -99,207 +191,22 @@
                 .catch(error => console.error('Error fetching accumulated results:', error));
         }
 
-        // Auto-update click count and graph every 5 seconds
+        // Collapsible sections
+        function toggleCollapse(sectionId) {
+            const section = document.getElementById(sectionId);
+            const arrow = document.getElementById(`${sectionId}-arrow`);
+            if (section.style.display === "none") {
+                section.style.display = "block";
+                arrow.textContent = "▲";
+            } else {
+                section.style.display = "none";
+                arrow.textContent = "▼";
+            }
+        }
+
         setInterval(updateClickCount, 5000);
         setInterval(renderGraph, 5000);
-
-        // Initial render
         renderGraph();
     </script>
-
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-        }
-        .container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-        }
-        .box {
-            padding: 15px;
-            border-radius: 5px;
-            flex: 1 1 auto;
-            min-width: 200px;
-            box-sizing: border-box;
-            margin-bottom: 20px;
-        }
-        .standings{
-            font-size: 1.2em;
-            background-color: rgb(81, 106, 164);
-            color: white;
-            padding: 15px;
-            border-radius: 5px;
-        }
-
-        .scenarios {
-            font-size: 1.2em;
-            background-color: rgb(68, 155, 202);
-            color: white;
-            padding: 15px;
-            border-radius: 5px;
-        }
-        .standings table, .scenarios table {
-            width: 100%;
-            border-collapse: collapse;
-            text-align: left;
-        }
-        .standings th, .standings td, .scenarios th, .scenarios td {
-            border: 1px solid white;
-            padding: 5px;
-        }
-        .division-winners {
-            background-color: rgb(81, 106, 164);
-            font-size: 2em;
-            font-weight: bold;
-            text-align: center;
-            padding: 15px;
-            border-radius: 5px;
-        }
-        .game-results {
-            font-size: 1.2em;
-            background-color: rgb(68, 155, 202);
-            padding: 15px;
-            border-radius: 5px;
-        }
-        .toggle-header {
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 1.5em;
-            padding: 10px;
-            background-color: #000000;
-            color: white;
-            border-radius: 5px;
-            margin-bottom: 10px;
-        }
-        .content {
-            display: none;
-            padding-top: 10px;
-        }
-        .expanded .content {
-            display: block;
-        }
-        .form-container .input-group {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 8px;
-        }
-        .form-container .input-group label {
-            flex: 1;
-            text-align: right;
-            padding-right: 10px;
-        }
-        .form-container .input-group input {
-            flex: 2;
-            text-align: center;
-        }
-        .graph-container {
-            margin-top: 20px;
-            padding: 15px;
-            background-color: #f9f9f9;
-            border-radius: 5px;
-        }
-    </style>
-    <script>
-        function toggleSection(id) {
-            document.getElementById(id).classList.toggle('expanded');
-        }
-    </script>
-</head>
-<body>
-    <h1>Baseball Simulation</h1>
-    <div class="container">
-        <div class="box form-container">
-            <h2>Input Team Strengths</h2>
-            <form method="POST">
-                {% for team in ["Julian", "BenT", "BenR", "Kircher", "Carbone", "HarryKirch", "Jmo", "Tom"] %}
-                <div class="input-group">
-                    <label for="{{ team }}">{{ team }}:</label>
-                    <input type="number" step="0.01" name="{{ team }}" value="{{ request.form.get(team, '') }}" required>
-                </div>
-                {% endfor %}
-                <button type="submit">Run Simulation</button>
-            </form>
-        </div>
-        
-        {% if standings %}
-        <div class="box standings expanded" id="standings">
-            <div class="toggle-header" onclick="toggleSection('standings')">Final Standings</div>
-            <div class="content">
-                <table>
-                    <tr>
-                        <th>Team</th>
-                        <th>Wins</th>
-                        <th>Losses</th>
-                        <th>Run Diff</th>
-                    </tr>
-                    {% for team in standings %}
-                    <tr>
-                        <td>{{ team }}</td>
-                        <td>{{ simulated_standings[team]['wins'] }}</td>
-                        <td>{{ simulated_standings[team]['losses'] }}</td>
-                        <td>{{ simulated_standings[team]['run_diff'] }}</td>
-                    </tr>
-                    {% endfor %}
-                </table>
-            </div>
-        </div>
-        {% endif %}
-
-        {% if division_winners %}
-        <div class="box division-winners expanded" id="division-winners">
-            <div class="toggle-header" onclick="toggleSection('division-winners')">Division Winners (Clinched a Bye)</div>
-            <div class="content">
-                {% for division, winner in division_winners.items() %}
-                <p>{{ division }}: {{ winner }}</p>
-                {% endfor %}
-            </div>
-        </div>
-        {% endif %}
-    </div>
-
-    {% if standings %}
-    <div class="container">
-        <div class="box scenarios" id="scenarios">
-            <div class="toggle-header" onclick="toggleSection('scenarios')">Playoff Scenarios (Probabilities)</div>
-            <div class="content">
-                <table>
-                    <tr>
-                        <th>Team</th>
-                        <th>Clinch a Bye</th>
-                        <th>Clinch Playoffs</th>
-                        <th>Miss Playoffs</th>
-                    </tr>
-                    {% for team, scenario in scenarios.items() %}
-                    <tr>
-                        <td>{{ team }}</td>
-                        <td>{{ "%.2f"|format(scenario['clinch_bye'] * 100) }}%</td>
-                        <td>{{ "%.2f"|format(scenario['clinch_playoffs'] * 100) }}%</td>
-                        <td>{{ "%.2f"|format(scenario['miss_playoffs'] * 100) }}%</td>
-                    </tr>
-                    {% endfor %}
-                </table>
-            </div>
-        </div>
-
-        <div class="box game-results" id="game-results">
-            <div class="toggle-header" onclick="toggleSection('game-results')">Simulated Game Results</div>
-            <div class="content">
-                {% for i in range(8) %}
-                    {% if i == 0 %}<h3>Tuesday Week 4</h3>{% elif i == 4 %}<h3>Thursday Week 5</h3>{% endif %}
-                    {% set parts = game_results[i].split(' ') %}
-                    <p><span class="team">{{ parts[0] }}</span> beats <span class="team">{{ parts[2] }}</span> by <span class="score">{{ parts[4] }}</span> runs</p>
-                {% endfor %}
-            </div>
-        </div>
-    </div>
-    {% endif %}
-
-    <!-- Graph Container -->
-    <div class="graph-container">
-        <canvas id="resultsChart"></canvas>
-    </div>
 </body>
 </html>

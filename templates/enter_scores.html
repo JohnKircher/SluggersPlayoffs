@@ -4,25 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Enter Scores</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-        }
-        .container {
-            display: flex;
-            gap: 20px;
-        }
-        .games {
-            flex: 1;
-        }
-        .standings {
-            flex: 1;
-        }
+        /* Ensure table borders are visible */
         table {
-            width: 100%;
             border-collapse: collapse;
-            margin-top: 20px;
+            width: 100%;
         }
         th, td {
             border: 1px solid #ddd;
@@ -32,80 +19,47 @@
         th {
             background-color: #f2f2f2;
         }
-        .input-group {
-            margin-bottom: 10px;
-        }
-        .input-group label {
-            display: inline-block;
-            width: 150px;
-        }
-        .input-group input {
-            width: 60px;
-        }
-        .reset-button {
-            margin-top: 20px;
-            background: red;
-            color: white;
-            padding: 10px;
-            border: none;
-            cursor: pointer;
-        }
 
-        /* Center probability table */
-        .probabilities-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-top: 40px;
-        }
-        
-        .highlight-gold {
-            background-color: #FFD700; /* Gold */
-            font-weight: bold;
-        }
-
-        .highlight-green {
-            background-color: #90EE90; /* Light Green */
-            font-weight: bold;
-        }
-
-        .highlight-red {
-            background-color: #FF6347; /* Tomato Red */
-            font-weight: bold;
-        }
+        /* Highlight classes */
+        .highlight-gold { background-color: #FFD700; font-weight: bold; }
+        .highlight-green { background-color: #90EE90; font-weight: bold; }
+        .highlight-red { background-color: #FF6347; font-weight: bold; }
     </style>
 </head>
-<body>
-    <h1>Enter Scores for Remaining Games</h1>
-    <div class="container">
-        <div class="games">
-            <form id="score-form">
-                {% for i, game in remaining_games %}
-                    {% set team1, team2 = game %}
-                    <div class="input-group">
-                        <label>{{ team1 }} vs {{ team2 }}:</label>
-                        <input type="number" name="{{ team1 }}_score_{{ i }}" 
-                               value="{{ request.form.get(team1 ~ '_score_' ~ i, 0) }}" required>
-                        <input type="number" name="{{ team2 }}_score_{{ i }}" 
-                               value="{{ request.form.get(team2 ~ '_score_' ~ i, 0) }}" required>
-                        <button type="button" onclick="updateScore('{{ team1 }}', '{{ team2 }}', {{ i }})">Update</button>
-                    </div>
-                {% endfor %}
-            </form>
-            <button class="reset-button" onclick="resetScores()">Reset Standings & Scores</button>
-        </div>
-        <div class="standings">
-            <h2>Current Standings</h2>
-            <div id="standings-table">
-                {% include 'standings_table.html' %}
+<body class="bg-gray-100 p-6">
+    <div class="max-w-7xl mx-auto">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6">Enter Scores for Remaining Games</h1>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Score Entry Section -->
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <h2 class="text-xl font-semibold text-gray-700 mb-4">Score Entry</h2>
+                <form id="score-form" class="space-y-4">
+                    {% for i, game in remaining_games %}
+                        {% set team1, team2 = game %}
+                        <div class="flex items-center space-x-4">
+                            <label class="w-32 text-gray-700">{{ team1 }} vs {{ team2 }}:</label>
+                            <input type="number" name="{{ team1 }}_score_{{ i }}" value="0" class="w-16 p-2 border rounded">
+                            <input type="number" name="{{ team2 }}_score_{{ i }}" value="0" class="w-16 p-2 border rounded">
+                            <button type="button" onclick="updateScore('{{ team1 }}', '{{ team2 }}', {{ i }})" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Update</button>
+                        </div>
+                    {% endfor %}
+                </form>
+                <button onclick="resetScores()" class="mt-6 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">Reset Standings & Scores</button>
+            </div>
+
+            <!-- Standings Section -->
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <h2 class="text-xl font-semibold text-gray-700 mb-4">Current Standings</h2>
+                <div id="standings-table">
+                    {% include 'standings_table.html' %}
+                </div>
             </div>
         </div>
-    </div>
 
-    <!-- Centered Probability Table -->
-    <div class="probabilities-container">
-        <div>
-            <h2 style="text-align: center;">Live Playoff Probabilities</h2>
+        <!-- Probability Table Section -->
+        <div class="mt-8 bg-white p-6 rounded-lg shadow-md">
+            <h2 class="text-xl font-semibold text-gray-700 mb-4">Live Playoff Probabilities</h2>
             <div id="probabilities-table">
                 {% include 'probabilities_table.html' %}
             </div>
@@ -113,52 +67,37 @@
     </div>
 
     <script>
-        let debounceTimeout;
-
         function updateScore(team1, team2, index) {
             let score1 = document.querySelector(`input[name='${team1}_score_${index}']`).value;
             let score2 = document.querySelector(`input[name='${team2}_score_${index}']`).value;
 
             fetch('/update-score', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                team1: team1,
-                team2: team2,
-                score1: score1,
-                score2: score2,
-                index: index
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            document.getElementById('standings-table').innerHTML = data.standings_html;
-            document.getElementById('probabilities-table').innerHTML = data.probabilities_html;
-        })
-        .catch(error => console.error('Error updating score:', error));
-    }
-
-        
-
-        function resetScores() {
-            fetch('/reset-scores', {
-                method: 'POST'
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ team1, team2, score1, score2, index })
             })
             .then(response => response.json())
             .then(data => {
                 document.getElementById('standings-table').innerHTML = data.standings_html;
                 document.getElementById('probabilities-table').innerHTML = data.probabilities_html;
+                highlight100PercentValues();
+            })
+            .catch(error => console.error('Error updating score:', error));
+        }
 
-                // Reset all input fields to 0
+        function resetScores() {
+            fetch('/reset-scores', { method: 'POST' })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('standings-table').innerHTML = data.standings_html;
+                document.getElementById('probabilities-table').innerHTML = data.probabilities_html;
                 document.querySelectorAll("input[type='number']").forEach(input => input.value = 0);
+                highlight100PercentValues();
             })
             .catch(error => console.error('Error resetting scores:', error));
         }
 
         function highlight100PercentValues() {
-            // Find all probability table cells and highlight if the text is "100%"
             document.querySelectorAll('#probabilities-table td').forEach(cell => {
                 if (cell.innerText.trim() === "100%") {
                     cell.classList.add('highlight-green');
@@ -168,7 +107,6 @@
             });
         }
 
-        // Run highlighting on initial load in case there are already 100% values
         document.addEventListener('DOMContentLoaded', highlight100PercentValues);
     </script>
 </body>

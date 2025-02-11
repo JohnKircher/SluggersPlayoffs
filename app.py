@@ -400,10 +400,6 @@ def home():
         }
 
         remaining_games = [
-            #('HarryKirch', 'BenT'),
-            #('Jmo', 'Tom'),
-            #('Julian', 'BenR'),
-            #('Carbone', 'Kircher'),
             ('Julian', 'Tom'),
             ('BenT', 'Kircher'),
             ('Jmo', 'Carbone'),
@@ -421,10 +417,36 @@ def home():
         # Save simulation results
         save_simulation_results(teams, scenarios, strength_values)
 
-        return render_template('index.html', standings=sorted_standings, simulated_standings=simulated_standings, division_winners=division_winners, game_results=game_results, scenarios=scenarios, strength_values=strength_values, click_count=get_click_count())
+        # Pass probabilities to the template
+        probabilities = scenarios  # Use the scenarios as probabilities
 
-    return render_template('index.html', click_count=get_click_count())
+        return render_template(
+            'index.html',
+            standings=simulated_standings,  # Pass the simulated_standings dictionary
+            sorted_standings=sorted_standings,  # Pass the sorted list of team names
+            division_winners=division_winners,
+            game_results=game_results,
+            scenarios=scenarios,
+            probabilities=probabilities,
+            strength_values=strength_values,
+            click_count=get_click_count()
+        )
 
+    # Default values for GET request
+    division_winners = {
+        'Division A': 'Julian',  # Example default value
+        'Division B': 'BenT'     # Example default value
+    }
+
+    return render_template(
+        'index.html',
+        click_count=get_click_count(),
+        division_winners=division_winners,
+        standings={},  # Pass empty standings for initial load
+        sorted_standings=[],  # Pass empty sorted_standings for initial load
+        game_results=[],  # Pass empty game_results for initial load
+        probabilities={}  # Pass empty probabilities for initial load
+    )
 
 base_standings = {
     'Julian': {'wins': 5, 'losses': 3, 'run_diff': 15},
