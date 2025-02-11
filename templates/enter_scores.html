@@ -98,14 +98,23 @@
         }
 
         function highlight100PercentValues() {
-            document.querySelectorAll('#probabilities-table td').forEach(cell => {
-                if (cell.innerText.trim() === "100%") {
-                    cell.classList.add('highlight-green');
-                } else {
-                    cell.classList.remove('highlight-green');
-                }
-            });
+    document.querySelectorAll('#probabilities-table td').forEach(cell => {
+        let value = cell.innerText.trim();
+        if (value === "100.00%") {
+            let columnIndex = cell.cellIndex; 
+            if (columnIndex === 1) { 
+                cell.classList.add('highlight-gold'); // Clinch Bye
+            } else if (columnIndex === 2) { 
+                cell.classList.add('highlight-green'); // Clinch Playoffs
+            } else if (columnIndex === 3) { 
+                cell.classList.add('highlight-red'); // Eliminated
+            }
+        } else {
+            cell.classList.remove('highlight-green', 'highlight-gold', 'highlight-red');
         }
+    });
+}
+
 
         document.addEventListener('DOMContentLoaded', highlight100PercentValues);
     </script>
