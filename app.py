@@ -456,7 +456,7 @@ def home():
         probabilities={}  # Pass empty probabilities for initial load
     )
 
-teams = {
+base_standings = {
             'BenT': {'wins': 5, 'losses': 1, 'run_diff': 30},
             'Tom': {'wins': 5, 'losses': 1, 'run_diff': 23},
             'Jmo': {'wins': 3, 'losses': 3, 'run_diff': 8},
@@ -581,7 +581,7 @@ def reset_scores():
     previous_scores = {i: (0, 0) for i in range(len(remaining_games))}
 
     # Fully reset base_standings to original values
-    teams = {
+    base_standings = {
             'BenT': {'wins': 5, 'losses': 1, 'run_diff': 30},
             'Tom': {'wins': 5, 'losses': 1, 'run_diff': 23},
             'Jmo': {'wins': 3, 'losses': 3, 'run_diff': 8},
@@ -592,24 +592,16 @@ def reset_scores():
             'HarryKirch': {'wins': 1, 'losses': 5, 'run_diff': -24}
     }
 
-    remaining_games = [
-        ('Jmo', 'Tom'),
-        ('Kircher', 'HarryKirch'),
-        ('BenR', 'BenT'),
-        ('Julian', 'Carbone'),
-        ('Julian', 'Tom'),
-        ('BenT', 'Jmo'),
-        ('HarryKirch', 'BenR'),
-        ('Carbone', 'Kircher'),
-        ('HarryKirch', 'Jmo'),
-        ('Tom', 'Kircher'),
-        ('BenT', 'Carbone'),
-        ('BenR', 'Julian'),
-        ('Kircher', 'Jmo'),
-        ('Tom', 'HarryKirch'),
-        ('Julian', 'BenT'),
-        ('BenR', 'Carbone')
-    ]
+    strength_values = {
+        'Julian': 1.0,
+        'BenT': 1.0,
+        'BenR': 1.0,
+        'Kircher': 1.0,
+        'Carbone': 1.0,
+        'HarryKirch': 1.0,
+        'Jmo': 1.0,
+        'Tom': 1.0
+    }
 
     # Compute new probabilities based on the reset standings
     probabilities = calculate_live_probabilities(base_standings, remaining_games, previous_scores, strength_values)
