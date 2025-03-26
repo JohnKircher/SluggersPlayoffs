@@ -222,13 +222,13 @@ def calculate_live_probabilities(base_standings, remaining_games, previous_score
             unplayed_games.append((team1, team2))
 
     # Debugging: Print played and unplayed games
-    print("\n--- Played and Unplayed Games ---")
-    print("Played Games:")
-    for game in played_games:
-        print(f"{game[0]} vs {game[1]}: {game[2]}-{game[3]}")
-    print("\nUnplayed Games:")
-    for game in unplayed_games:
-        print(f"{game[0]} vs {game[1]}")
+    # print("\n--- Played and Unplayed Games ---")
+    # print("Played Games:")
+    # for game in played_games:
+    #     print(f"{game[0]} vs {game[1]}: {game[2]}-{game[3]}")
+    # print("\nUnplayed Games:")
+    # for game in unplayed_games:
+    #     print(f"{game[0]} vs {game[1]}")
 
     # If all games have been played, calculate outcomes directly from standings
     if not unplayed_games:
@@ -239,9 +239,9 @@ def calculate_live_probabilities(base_standings, remaining_games, previous_score
             division_winners[division] = sorted_teams[0]  # Top team gets a bye
 
         # Debugging: Print division winners
-        print("\n--- Division Winners ---")
-        for division, winner in division_winners.items():
-            print(f"{division}: {winner} (Wins: {base_standings[winner]['wins']}, Run Diff: {base_standings[winner]['run_diff']})")
+        # print("\n--- Division Winners ---")
+        # for division, winner in division_winners.items():
+        #     print(f"{division}: {winner} (Wins: {base_standings[winner]['wins']}, Run Diff: {base_standings[winner]['run_diff']})")
 
         # Determine wildcard teams (next 4 teams across both divisions, excluding division winners)
         all_teams = list(base_standings.keys())
@@ -252,10 +252,10 @@ def calculate_live_probabilities(base_standings, remaining_games, previous_score
         # Select top 4 teams as wildcards
         wildcard_teams = sorted_wildcards[:4]
 
-        # Debugging: Print wildcard teams
-        print("\n--- Wildcard Teams ---")
-        for i, team in enumerate(wildcard_teams, 1):
-            print(f"Wildcard {i}: {team} (Wins: {base_standings[team]['wins']}, Run Diff: {base_standings[team]['run_diff']})")
+        # # Debugging: Print wildcard teams
+        # print("\n--- Wildcard Teams ---")
+        # for i, team in enumerate(wildcard_teams, 1):
+        #     print(f"Wildcard {i}: {team} (Wins: {base_standings[team]['wins']}, Run Diff: {base_standings[team]['run_diff']})")
 
         # Update scenarios for each team
         for team in base_standings:
@@ -300,16 +300,16 @@ def calculate_live_probabilities(base_standings, remaining_games, previous_score
                 simulated_standings[team1]['run_diff'] -= run_diff
 
             # Debugging: Print Jmo's wins after each game involving him
-            if team1 == 'Jmo' or team2 == 'Jmo':
-                print(f"\n--- Jmo's Game ---")
-                print(f"Game: {team1} vs {team2}")
-                print(f"Result: {team1 if random.random() < prob_team1_wins else team2} wins")
-                print(f"Jmo's Wins: {simulated_standings['Jmo']['wins']}")
+            # if team1 == 'Jmo' or team2 == 'Jmo':
+            #     print(f"\n--- Jmo's Game ---")
+            #     print(f"Game: {team1} vs {team2}")
+            #     print(f"Result: {team1 if random.random() < prob_team1_wins else team2} wins")
+            #     print(f"Jmo's Wins: {simulated_standings['Jmo']['wins']}")
 
-        # Debugging: Print final standings after each simulation
-        print("\n--- Final Standings After Simulation ---")
-        for team, stats in simulated_standings.items():
-            print(f"{team}: Wins: {stats['wins']}, Losses: {stats['losses']}, Run Diff: {stats['run_diff']}")
+        # # Debugging: Print final standings after each simulation
+        # print("\n--- Final Standings After Simulation ---")
+        # for team, stats in simulated_standings.items():
+        #     print(f"{team}: Wins: {stats['wins']}, Losses: {stats['losses']}, Run Diff: {stats['run_diff']}")
 
         # Determine division winners (top team in each division gets a bye)
         division_winners = {}
@@ -317,10 +317,10 @@ def calculate_live_probabilities(base_standings, remaining_games, previous_score
             sorted_teams = sorted(teams_in_div, key=lambda x: (simulated_standings[x]['wins'], simulated_standings[x]['run_diff']), reverse=True)
             division_winners[division] = sorted_teams[0]  # Top team gets a bye
 
-        # Debugging: Print division winners
-        print("\n--- Division Winners ---")
-        for division, winner in division_winners.items():
-            print(f"{division}: {winner} (Wins: {simulated_standings[winner]['wins']}, Run Diff: {simulated_standings[winner]['run_diff']})")
+        # # Debugging: Print division winners
+        # print("\n--- Division Winners ---")
+        # for division, winner in division_winners.items():
+        #     print(f"{division}: {winner} (Wins: {simulated_standings[winner]['wins']}, Run Diff: {simulated_standings[winner]['run_diff']})")
 
         # Determine wildcard teams (next 4 teams across both divisions, excluding division winners)
         all_teams = list(simulated_standings.keys())
@@ -331,10 +331,10 @@ def calculate_live_probabilities(base_standings, remaining_games, previous_score
         # Select top 4 teams as wildcards
         wildcard_teams = sorted_wildcards[:4]
 
-        # Debugging: Print wildcard teams
-        print("\n--- Wildcard Teams ---")
-        for i, team in enumerate(wildcard_teams, 1):
-            print(f"Wildcard {i}: {team} (Wins: {simulated_standings[team]['wins']}, Run Diff: {simulated_standings[team]['run_diff']})")
+        # # Debugging: Print wildcard teams
+        # print("\n--- Wildcard Teams ---")
+        # for i, team in enumerate(wildcard_teams, 1):
+        #     print(f"Wildcard {i}: {team} (Wins: {simulated_standings[team]['wins']}, Run Diff: {simulated_standings[team]['run_diff']})")
 
         # Update scenarios for each team
         for team in simulated_standings:
@@ -353,9 +353,9 @@ def calculate_live_probabilities(base_standings, remaining_games, previous_score
         scenarios[team]['miss_playoffs'] /= total
 
     # Debugging: Print final scenarios
-    print("\n--- Final Scenarios ---")
-    for team, scenario in scenarios.items():
-        print(f"{team}: Clinch Bye: {scenario['clinch_bye'] * 100:.2f}%, Clinch Playoffs: {scenario['clinch_playoffs'] * 100:.2f}%, Miss Playoffs: {scenario['miss_playoffs'] * 100:.2f}%")
+    # print("\n--- Final Scenarios ---")
+    # for team, scenario in scenarios.items():
+    #     print(f"{team}: Clinch Bye: {scenario['clinch_bye'] * 100:.2f}%, Clinch Playoffs: {scenario['clinch_playoffs'] * 100:.2f}%, Miss Playoffs: {scenario['miss_playoffs'] * 100:.2f}%")
 
     return scenarios
 
