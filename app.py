@@ -129,8 +129,8 @@ def run_single_simulation(teams, remaining_games):
     
     # Determine division winners (top team in each division gets a bye)
     divisions = {
-        'Division A': ['Tom', 'Jmo', 'HarryKirch', 'Kircher'],
-        'Division B': ['BenT', 'BenR', 'Carbone', 'Julian']
+        'Division A': ['Jmo', 'Julian', 'Carbone', 'Kircher'],
+        'Division B': ['BenT', 'BenR', 'HarryKirch', 'Tom']
     }
     division_winners = {}
     for division, teams_in_div in divisions.items():
@@ -142,8 +142,8 @@ def run_single_simulation(teams, remaining_games):
 # Function to determine playoff scenarios
 def playoff_scenarios(teams, remaining_games, num_simulations=10000):
     divisions = {
-        'Division A': ['Tom', 'Jmo', 'HarryKirch', 'Kircher'],
-        'Division B': ['BenT', 'BenR', 'Carbone', 'Julian']
+        'Division A': ['Jmo', 'Julian', 'Carbone', 'Kircher'],
+        'Division B': ['BenT', 'BenR', 'HarryKirch', 'Tom']
     }
     scenarios = defaultdict(lambda: {'clinch_bye': 0, 'clinch_playoffs': 0, 'miss_playoffs': 0})
     
