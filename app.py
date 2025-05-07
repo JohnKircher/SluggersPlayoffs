@@ -206,8 +206,8 @@ def calculate_live_probabilities(base_standings, remaining_games, previous_score
     If all games have been played, the playoff outcomes are calculated directly from the standings.
     """
     divisions = {
-        'Division A': ['Tom', 'Jmo', 'HarryKirch', 'Kircher'],
-        'Division B': ['BenT', 'BenR', 'Carbone', 'Julian']
+        'Division A': ['Jmo', 'Julian', 'Carbone', 'Kircher'],
+        'Division B': ['BenT', 'BenR', 'HarryKirch', 'Tom']
     }
     scenarios = defaultdict(lambda: {'clinch_bye': 0, 'clinch_playoffs': 0, 'miss_playoffs': 0})
 
