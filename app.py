@@ -129,8 +129,8 @@ def run_single_simulation(teams, remaining_games):
     
     # Determine division winners (top team in each division gets a bye)
     divisions = {
-        'Division A': ['BenT', 'Tom', 'Julian', 'Kircher'],
-        'Division B': ['Jmo', 'BenR', 'Carbone', 'HarryKirch']
+        'Division A': ['Jmo', 'Julian', 'Carbone', 'Kircher'],
+        'Division B': ['BenT', 'BenR', 'HarryKirch', 'Tom']
     }
     division_winners = {}
     for division, teams_in_div in divisions.items():
@@ -142,8 +142,8 @@ def run_single_simulation(teams, remaining_games):
 # Function to determine playoff scenarios
 def playoff_scenarios(teams, remaining_games, num_simulations=10000):
     divisions = {
-        'Division A': ['BenT', 'Tom', 'Julian', 'Kircher'],
-        'Division B': ['Jmo', 'BenR', 'Carbone', 'HarryKirch']
+        'Division A': ['Jmo', 'Julian', 'Carbone', 'Kircher'],
+        'Division B': ['BenT', 'BenR', 'HarryKirch', 'Tom']
     }
     scenarios = defaultdict(lambda: {'clinch_bye': 0, 'clinch_playoffs': 0, 'miss_playoffs': 0})
     
@@ -206,8 +206,8 @@ def calculate_live_probabilities(base_standings, remaining_games, previous_score
     If all games have been played, the playoff outcomes are calculated directly from the standings.
     """
     divisions = {
-        'Division A': ['BenT', 'Tom', 'Julian', 'Kircher'],
-        'Division B': ['Jmo', 'BenR', 'Carbone', 'HarryKirch']
+        'Division A': ['Jmo', 'Julian', 'Carbone', 'Kircher'],
+        'Division B': ['BenT', 'BenR', 'HarryKirch', 'Tom']
     }
     scenarios = defaultdict(lambda: {'clinch_bye': 0, 'clinch_playoffs': 0, 'miss_playoffs': 0})
 
@@ -222,13 +222,13 @@ def calculate_live_probabilities(base_standings, remaining_games, previous_score
             unplayed_games.append((team1, team2))
 
     # Debugging: Print played and unplayed games
-    print("\n--- Played and Unplayed Games ---")
-    print("Played Games:")
-    for game in played_games:
-        print(f"{game[0]} vs {game[1]}: {game[2]}-{game[3]}")
-    print("\nUnplayed Games:")
-    for game in unplayed_games:
-        print(f"{game[0]} vs {game[1]}")
+    # print("\n--- Played and Unplayed Games ---")
+    # print("Played Games:")
+    # for game in played_games:
+    #     print(f"{game[0]} vs {game[1]}: {game[2]}-{game[3]}")
+    # print("\nUnplayed Games:")
+    # for game in unplayed_games:
+    #     print(f"{game[0]} vs {game[1]}")
 
     # If all games have been played, calculate outcomes directly from standings
     if not unplayed_games:
@@ -239,9 +239,9 @@ def calculate_live_probabilities(base_standings, remaining_games, previous_score
             division_winners[division] = sorted_teams[0]  # Top team gets a bye
 
         # Debugging: Print division winners
-        print("\n--- Division Winners ---")
-        for division, winner in division_winners.items():
-            print(f"{division}: {winner} (Wins: {base_standings[winner]['wins']}, Run Diff: {base_standings[winner]['run_diff']})")
+        # print("\n--- Division Winners ---")
+        # for division, winner in division_winners.items():
+        #     print(f"{division}: {winner} (Wins: {base_standings[winner]['wins']}, Run Diff: {base_standings[winner]['run_diff']})")
 
         # Determine wildcard teams (next 4 teams across both divisions, excluding division winners)
         all_teams = list(base_standings.keys())
@@ -252,10 +252,10 @@ def calculate_live_probabilities(base_standings, remaining_games, previous_score
         # Select top 4 teams as wildcards
         wildcard_teams = sorted_wildcards[:4]
 
-        # Debugging: Print wildcard teams
-        print("\n--- Wildcard Teams ---")
-        for i, team in enumerate(wildcard_teams, 1):
-            print(f"Wildcard {i}: {team} (Wins: {base_standings[team]['wins']}, Run Diff: {base_standings[team]['run_diff']})")
+        # # Debugging: Print wildcard teams
+        # print("\n--- Wildcard Teams ---")
+        # for i, team in enumerate(wildcard_teams, 1):
+        #     print(f"Wildcard {i}: {team} (Wins: {base_standings[team]['wins']}, Run Diff: {base_standings[team]['run_diff']})")
 
         # Update scenarios for each team
         for team in base_standings:
@@ -300,16 +300,16 @@ def calculate_live_probabilities(base_standings, remaining_games, previous_score
                 simulated_standings[team1]['run_diff'] -= run_diff
 
             # Debugging: Print Jmo's wins after each game involving him
-            if team1 == 'Jmo' or team2 == 'Jmo':
-                print(f"\n--- Jmo's Game ---")
-                print(f"Game: {team1} vs {team2}")
-                print(f"Result: {team1 if random.random() < prob_team1_wins else team2} wins")
-                print(f"Jmo's Wins: {simulated_standings['Jmo']['wins']}")
+            # if team1 == 'Jmo' or team2 == 'Jmo':
+            #     print(f"\n--- Jmo's Game ---")
+            #     print(f"Game: {team1} vs {team2}")
+            #     print(f"Result: {team1 if random.random() < prob_team1_wins else team2} wins")
+            #     print(f"Jmo's Wins: {simulated_standings['Jmo']['wins']}")
 
-        # Debugging: Print final standings after each simulation
-        print("\n--- Final Standings After Simulation ---")
-        for team, stats in simulated_standings.items():
-            print(f"{team}: Wins: {stats['wins']}, Losses: {stats['losses']}, Run Diff: {stats['run_diff']}")
+        # # Debugging: Print final standings after each simulation
+        # print("\n--- Final Standings After Simulation ---")
+        # for team, stats in simulated_standings.items():
+        #     print(f"{team}: Wins: {stats['wins']}, Losses: {stats['losses']}, Run Diff: {stats['run_diff']}")
 
         # Determine division winners (top team in each division gets a bye)
         division_winners = {}
@@ -317,10 +317,10 @@ def calculate_live_probabilities(base_standings, remaining_games, previous_score
             sorted_teams = sorted(teams_in_div, key=lambda x: (simulated_standings[x]['wins'], simulated_standings[x]['run_diff']), reverse=True)
             division_winners[division] = sorted_teams[0]  # Top team gets a bye
 
-        # Debugging: Print division winners
-        print("\n--- Division Winners ---")
-        for division, winner in division_winners.items():
-            print(f"{division}: {winner} (Wins: {simulated_standings[winner]['wins']}, Run Diff: {simulated_standings[winner]['run_diff']})")
+        # # Debugging: Print division winners
+        # print("\n--- Division Winners ---")
+        # for division, winner in division_winners.items():
+        #     print(f"{division}: {winner} (Wins: {simulated_standings[winner]['wins']}, Run Diff: {simulated_standings[winner]['run_diff']})")
 
         # Determine wildcard teams (next 4 teams across both divisions, excluding division winners)
         all_teams = list(simulated_standings.keys())
@@ -331,10 +331,10 @@ def calculate_live_probabilities(base_standings, remaining_games, previous_score
         # Select top 4 teams as wildcards
         wildcard_teams = sorted_wildcards[:4]
 
-        # Debugging: Print wildcard teams
-        print("\n--- Wildcard Teams ---")
-        for i, team in enumerate(wildcard_teams, 1):
-            print(f"Wildcard {i}: {team} (Wins: {simulated_standings[team]['wins']}, Run Diff: {simulated_standings[team]['run_diff']})")
+        # # Debugging: Print wildcard teams
+        # print("\n--- Wildcard Teams ---")
+        # for i, team in enumerate(wildcard_teams, 1):
+        #     print(f"Wildcard {i}: {team} (Wins: {simulated_standings[team]['wins']}, Run Diff: {simulated_standings[team]['run_diff']})")
 
         # Update scenarios for each team
         for team in simulated_standings:
@@ -353,9 +353,9 @@ def calculate_live_probabilities(base_standings, remaining_games, previous_score
         scenarios[team]['miss_playoffs'] /= total
 
     # Debugging: Print final scenarios
-    print("\n--- Final Scenarios ---")
-    for team, scenario in scenarios.items():
-        print(f"{team}: Clinch Bye: {scenario['clinch_bye'] * 100:.2f}%, Clinch Playoffs: {scenario['clinch_playoffs'] * 100:.2f}%, Miss Playoffs: {scenario['miss_playoffs'] * 100:.2f}%")
+    # print("\n--- Final Scenarios ---")
+    # for team, scenario in scenarios.items():
+    #     print(f"{team}: Clinch Bye: {scenario['clinch_bye'] * 100:.2f}%, Clinch Playoffs: {scenario['clinch_playoffs'] * 100:.2f}%, Miss Playoffs: {scenario['miss_playoffs'] * 100:.2f}%")
 
     return scenarios
 
@@ -389,25 +389,33 @@ def home():
 
         # Define teams with strength values
         teams = {
-            'Julian': {'wins': 5, 'losses': 3, 'run_diff': 15, 'strength': strength_values['Julian']},
-            'BenT': {'wins': 5, 'losses': 3, 'run_diff': 12, 'strength': strength_values['BenT']},
-            'BenR': {'wins': 5, 'losses': 3, 'run_diff': 22, 'strength': strength_values['BenR']},
-            'Kircher': {'wins': 4, 'losses': 4, 'run_diff': -10, 'strength': strength_values['Kircher']},
-            'Carbone': {'wins': 4, 'losses': 4, 'run_diff': -1, 'strength': strength_values['Carbone']},
-            'HarryKirch': {'wins': 4, 'losses': 4, 'run_diff': -11, 'strength': strength_values['HarryKirch']},
-            'Jmo': {'wins': 2, 'losses': 6, 'run_diff': -14, 'strength': strength_values['Jmo']},
-            'Tom': {'wins': 3, 'losses': 5, 'run_diff': -13, 'strength': strength_values['Tom']}
+            'BenT': {'wins': 2, 'losses': 4, 'run_diff': -13, 'strength': strength_values['BenT']},
+            'Tom': {'wins': 2, 'losses': 4, 'run_diff': -27, 'strength': strength_values['Tom']},
+            'Jmo': {'wins': 5, 'losses': 1, 'run_diff': 25, 'strength': strength_values['Jmo']},
+            'BenR': {'wins': 3, 'losses': 3, 'run_diff': 1, 'strength': strength_values['BenR']},
+            'Kircher': {'wins': 4, 'losses': 2, 'run_diff': 2, 'strength': strength_values['Kircher']},
+            'Carbone': {'wins': 3, 'losses': 3, 'run_diff': 0, 'strength': strength_values['Carbone']},
+            'Julian': {'wins': 1, 'losses': 5, 'run_diff': -8, 'strength': strength_values['Julian']},
+            'HarryKirch': {'wins': 4, 'losses': 2, 'run_diff': 20, 'strength': strength_values['HarryKirch']}
         }
 
         remaining_games = [
-            ('Julian', 'Tom'),
-            ('BenT', 'Kircher'),
-            ('Jmo', 'Carbone'),
-            ('BenR', 'HarryKirch'),
+            ('Julian', 'Jmo'),
+            ('Kircher', 'Carbone'),
+            ('HarryKirch', 'BenT'),
+            ('Tom', 'BenR'),
+            ('Tom', 'Jmo'),
             ('BenT', 'Julian'),
-            ('Kircher', 'Tom'),
-            ('HarryKirch', 'Jmo'),
-            ('BenR', 'Carbone')
+            ('Carbone', 'HarryKirch'),
+            ('BenR', 'Kircher'),
+            ('Carbone', 'Julian'),
+            ('Jmo', 'Kircher'),
+            ('BenT', 'BenR'),
+            ('HarryKirch', 'Tom'),
+            ('Kircher', 'Julian'),
+            ('Jmo', 'Carbone'),
+            ('Tom', 'BenT'),
+            ('HarryKirch', 'BenR')
         ]
 
         # Run simulation
@@ -449,26 +457,34 @@ def home():
     )
 
 base_standings = {
-    'Julian': {'wins': 5, 'losses': 3, 'run_diff': 15},
-    'BenT': {'wins': 5, 'losses': 3, 'run_diff': 12},
-    'BenR': {'wins': 5, 'losses': 3, 'run_diff': 22},
-    'Kircher': {'wins': 4, 'losses': 4, 'run_diff': -10},
-    'Carbone': {'wins': 4, 'losses': 4, 'run_diff': -1},
-    'HarryKirch': {'wins': 4, 'losses': 4, 'run_diff': -11},
-    'Jmo': {'wins': 2, 'losses': 6, 'run_diff': -14},
-    'Tom': {'wins': 3, 'losses': 5, 'run_diff': -13}
-}
+            'BenT': {'wins': 2, 'losses': 4, 'run_diff': -13},
+            'Tom': {'wins': 2, 'losses': 4, 'run_diff': -27},
+            'Jmo': {'wins': 5, 'losses': 1, 'run_diff': 25},
+            'BenR': {'wins': 3, 'losses': 3, 'run_diff': 1},
+            'Kircher': {'wins': 4, 'losses': 2, 'run_diff': 2},
+            'Carbone': {'wins': 3, 'losses': 3, 'run_diff': 0},
+            'Julian': {'wins': 1, 'losses': 5, 'run_diff': -8},
+            'HarryKirch': {'wins': 4, 'losses': 2, 'run_diff': 20}
+    }
 
 remaining_games = [
-    ('Julian', 'Tom'),
-    ('BenT', 'Kircher'),
-    ('Jmo', 'Carbone'),
-    ('BenR', 'HarryKirch'),
-    ('BenT', 'Julian'),
-    ('Kircher', 'Tom'),
-    ('HarryKirch', 'Jmo'),
-    ('BenR', 'Carbone')
-]
+            ('Julian', 'Jmo'),
+            ('Kircher', 'Carbone'),
+            ('HarryKirch', 'BenT'),
+            ('Tom', 'BenR'),
+            ('Tom', 'Jmo'),
+            ('BenT', 'Julian'),
+            ('Carbone', 'HarryKirch'),
+            ('BenR', 'Kircher'),
+            ('Carbone', 'Julian'),
+            ('Jmo', 'Kircher'),
+            ('BenT', 'BenR'),
+            ('HarryKirch', 'Tom'),
+            ('Kircher', 'Julian'),
+            ('Jmo', 'Carbone'),
+            ('Tom', 'BenT'),
+            ('HarryKirch', 'BenR')
+        ]
 
 previous_scores = {i: (0, 0) for i in range(len(remaining_games))}
 
@@ -566,17 +582,16 @@ def reset_scores():
 
     # Fully reset base_standings to original values
     base_standings = {
-        'Julian': {'wins': 5, 'losses': 3, 'run_diff': 15},
-        'BenT': {'wins': 5, 'losses': 3, 'run_diff': 12},
-        'BenR': {'wins': 5, 'losses': 3, 'run_diff': 22},
-        'Kircher': {'wins': 4, 'losses': 4, 'run_diff': -10},
-        'Carbone': {'wins': 4, 'losses': 4, 'run_diff': -1},
-        'HarryKirch': {'wins': 4, 'losses': 4, 'run_diff': -11},
-        'Jmo': {'wins': 2, 'losses': 6, 'run_diff': -14},
-        'Tom': {'wins': 3, 'losses': 5, 'run_diff': -13}
+            'BenT': {'wins': 2, 'losses': 4, 'run_diff': -13},
+            'Tom': {'wins': 2, 'losses': 4, 'run_diff': -27},
+            'Jmo': {'wins': 5, 'losses': 1, 'run_diff': 25},
+            'BenR': {'wins': 3, 'losses': 3, 'run_diff': 1},
+            'Kircher': {'wins': 4, 'losses': 2, 'run_diff': 2},
+            'Carbone': {'wins': 3, 'losses': 3, 'run_diff': 0},
+            'Julian': {'wins': 1, 'losses': 5, 'run_diff': -8},
+            'HarryKirch': {'wins': 4, 'losses': 2, 'run_diff': 20}
     }
 
-    # Define strength values (you can modify these as needed)
     strength_values = {
         'Julian': 1.0,
         'BenT': 1.0,

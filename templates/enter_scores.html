@@ -1,122 +1,117 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enter Scores</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <style>
-        /* Ensure table borders are visible */
-        table {
-            border-collapse: collapse;
-            width: 100%;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-        }
-        th {
-            background-color: #f2f2f2;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Enter Scores | Super Sluggers League</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+  <style>
+    table {
+      border-collapse: collapse;
+      width: 100%;
+    }
+    th, td {
+      border: 1px solid #374151;
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background-color: #1f2937;
+      color: #f9fafb;
+    }
 
-        /* Highlight classes */
-        .highlight-gold { background-color: #FFD700; font-weight: bold; }
-        .highlight-green { background-color: #90EE90; font-weight: bold; }
-        .highlight-red { background-color: #FF6347; font-weight: bold; }
-    </style>
+    .highlight-gold { background-color: #f59e0b; font-weight: bold; color: #111827; }
+    .highlight-green { background-color: #10b981; font-weight: bold; color: #111827; }
+    .highlight-red { background-color: #ef4444; font-weight: bold; color: #111827; }
+  </style>
 </head>
-<body class="bg-gray-100 p-6">
-    <div class="max-w-7xl mx-auto">
-        <h1 class="text-3xl font-bold text-gray-800 mb-6">Enter Scores for Remaining Games</h1>
-        
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <!-- Score Entry Section -->
-            <div class="bg-white p-6 rounded-lg shadow-md">
-                <h2 class="text-xl font-semibold text-gray-700 mb-4">Score Entry</h2>
-                <form id="score-form" class="space-y-4">
-                    {% for i, game in remaining_games %}
-                        {% set team1, team2 = game %}
-                        <div class="flex items-center space-x-4">
-                            <label class="w-32 text-gray-700">{{ team1 }} vs {{ team2 }}:</label>
-                            <input type="number" name="{{ team1 }}_score_{{ i }}" value="0" class="w-16 p-2 border rounded">
-                            <input type="number" name="{{ team2 }}_score_{{ i }}" value="0" class="w-16 p-2 border rounded">
-                            <button type="button" onclick="updateScore('{{ team1 }}', '{{ team2 }}', {{ i }})" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Update</button>
-                        </div>
-                    {% endfor %}
-                </form>
-                <button onclick="resetScores()" class="mt-6 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">Reset Standings & Scores</button>
-            </div>
+<body class="bg-gray-900 text-white p-6 min-h-screen">
+  <div class="max-w-7xl mx-auto">
+    <h1 class="text-4xl font-bold text-yellow-300 drop-shadow mb-6">📋 Enter Scores for Remaining Games</h1>
 
-            <!-- Standings Section -->
-            <div class="bg-white p-6 rounded-lg shadow-md">
-                <h2 class="text-xl font-semibold text-gray-700 mb-4">Current Standings</h2>
-                <div id="standings-table">
-                    {% include 'standings_table.html' %}
-                </div>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      
+      <!-- Score Entry -->
+      <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
+        <h2 class="text-2xl font-semibold text-white mb-4">Score Entry</h2>
+        <form id="score-form" class="space-y-4">
+          {% for i, game in remaining_games %}
+            {% set team1, team2 = game %}
+            <div class="flex items-center space-x-4">
+              <label class="w-32 text-gray-300">{{ team1 }} vs {{ team2 }}:</label>
+              <input type="number" name="{{ team1 }}_score_{{ i }}" value="0" class="w-16 p-2 border rounded bg-gray-700 text-white border-gray-600">
+              <input type="number" name="{{ team2 }}_score_{{ i }}" value="0" class="w-16 p-2 border rounded bg-gray-700 text-white border-gray-600">
+              <button type="button" onclick="updateScore('{{ team1 }}', '{{ team2 }}', {{ i }})" class="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600">Update</button>
             </div>
-        </div>
+          {% endfor %}
+        </form>
+        <button onclick="resetScores()" class="mt-6 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">Reset Standings & Scores</button>
+      </div>
 
-        <!-- Probability Table Section -->
-        <div class="mt-8 bg-white p-6 rounded-lg shadow-md">
-            <h2 class="text-xl font-semibold text-gray-700 mb-4">Live Playoff Probabilities</h2>
-            <div id="probabilities-table">
-                {% include 'probabilities_table.html' %}
-            </div>
+      <!-- Standings -->
+      <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
+        <h2 class="text-2xl font-semibold text-white mb-4">Current Standings</h2>
+        <div id="standings-table" class="text-sm">
+          {% include 'standings_table.html' %}
         </div>
+      </div>
     </div>
 
-    <script>
-        function updateScore(team1, team2, index) {
-            let score1 = document.querySelector(`input[name='${team1}_score_${index}']`).value;
-            let score2 = document.querySelector(`input[name='${team2}_score_${index}']`).value;
+    <!-- Probabilities -->
+    <div class="mt-8 bg-gray-800 p-6 rounded-lg shadow-lg">
+      <h2 class="text-2xl font-semibold text-white mb-4">📊 Live Playoff Probabilities</h2>
+      <div id="probabilities-table" class="text-sm">
+        {% include 'probabilities_table.html' %}
+      </div>
+    </div>
+  </div>
 
-            fetch('/update-score', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ team1, team2, score1, score2, index })
-            })
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('standings-table').innerHTML = data.standings_html;
-                document.getElementById('probabilities-table').innerHTML = data.probabilities_html;
-                highlight100PercentValues();
-            })
-            .catch(error => console.error('Error updating score:', error));
-        }
+  <script>
+    function updateScore(team1, team2, index) {
+      let score1 = document.querySelector(`input[name='${team1}_score_${index}']`).value;
+      let score2 = document.querySelector(`input[name='${team2}_score_${index}']`).value;
 
-        function resetScores() {
-            fetch('/reset-scores', { method: 'POST' })
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('standings-table').innerHTML = data.standings_html;
-                document.getElementById('probabilities-table').innerHTML = data.probabilities_html;
-                document.querySelectorAll("input[type='number']").forEach(input => input.value = 0);
-                highlight100PercentValues();
-            })
-            .catch(error => console.error('Error resetting scores:', error));
-        }
+      fetch('/update-score', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ team1, team2, score1, score2, index })
+      })
+      .then(response => response.json())
+      .then(data => {
+        document.getElementById('standings-table').innerHTML = data.standings_html;
+        document.getElementById('probabilities-table').innerHTML = data.probabilities_html;
+        highlight100PercentValues();
+      })
+      .catch(error => console.error('Error updating score:', error));
+    }
 
-        function highlight100PercentValues() {
-    document.querySelectorAll('#probabilities-table td').forEach(cell => {
+    function resetScores() {
+      fetch('/reset-scores', { method: 'POST' })
+      .then(response => response.json())
+      .then(data => {
+        document.getElementById('standings-table').innerHTML = data.standings_html;
+        document.getElementById('probabilities-table').innerHTML = data.probabilities_html;
+        document.querySelectorAll("input[type='number']").forEach(input => input.value = 0);
+        highlight100PercentValues();
+      })
+      .catch(error => console.error('Error resetting scores:', error));
+    }
+
+    function highlight100PercentValues() {
+      document.querySelectorAll('#probabilities-table td').forEach(cell => {
         let value = cell.innerText.trim();
         if (value === "100.00%") {
-            let columnIndex = cell.cellIndex; 
-            if (columnIndex === 1) { 
-                cell.classList.add('highlight-gold'); // Clinch Bye
-            } else if (columnIndex === 2) { 
-                cell.classList.add('highlight-green'); // Clinch Playoffs
-            } else if (columnIndex === 3) { 
-                cell.classList.add('highlight-red'); // Eliminated
-            }
+          let columnIndex = cell.cellIndex;
+          if (columnIndex === 1) cell.classList.add('highlight-gold');
+          else if (columnIndex === 2) cell.classList.add('highlight-green');
+          else if (columnIndex === 3) cell.classList.add('highlight-red');
         } else {
-            cell.classList.remove('highlight-green', 'highlight-gold', 'highlight-red');
+          cell.classList.remove('highlight-green', 'highlight-gold', 'highlight-red');
         }
-    });
-}
+      });
+    }
 
-
-        document.addEventListener('DOMContentLoaded', highlight100PercentValues);
-    </script>
+    document.addEventListener('DOMContentLoaded', highlight100PercentValues);
+  </script>
 </body>
 </html>
