@@ -129,8 +129,8 @@ def run_single_simulation(teams, remaining_games):
     
     # Determine division winners (top team in each division gets a bye)
     divisions = {
-        'Division A': ['Jmo', 'Julian', 'Carbone', 'Kircher'],
-        'Division B': ['BenT', 'BenR', 'HarryKirch', 'Tom']
+        'Division A': ['Carbone', 'HarryKirch', 'BenT', 'Kircher'],
+        'Division B': ['Jmo', 'Julian', 'Tom', 'BenR']
     }
     division_winners = {}
     for division, teams_in_div in divisions.items():
@@ -142,8 +142,8 @@ def run_single_simulation(teams, remaining_games):
 # Function to determine playoff scenarios
 def playoff_scenarios(teams, remaining_games, num_simulations=10000):
     divisions = {
-        'Division A': ['Jmo', 'Julian', 'Carbone', 'Kircher'],
-        'Division B': ['BenT', 'BenR', 'HarryKirch', 'Tom']
+        'Division A': ['Carbone', 'HarryKirch', 'BenT', 'Kircher'],
+        'Division B': ['Jmo', 'Julian', 'Tom', 'BenR']
     }
     scenarios = defaultdict(lambda: {'clinch_bye': 0, 'clinch_playoffs': 0, 'miss_playoffs': 0})
     
@@ -206,8 +206,8 @@ def calculate_live_probabilities(base_standings, remaining_games, previous_score
     If all games have been played, the playoff outcomes are calculated directly from the standings.
     """
     divisions = {
-        'Division A': ['Jmo', 'Julian', 'Carbone', 'Kircher'],
-        'Division B': ['BenT', 'BenR', 'HarryKirch', 'Tom']
+        'Division A': ['Carbone', 'HarryKirch', 'BenT', 'Kircher'],
+        'Division B': ['Jmo', 'Julian', 'Tom', 'BenR']
     }
     scenarios = defaultdict(lambda: {'clinch_bye': 0, 'clinch_playoffs': 0, 'miss_playoffs': 0})
 
@@ -389,21 +389,29 @@ def home():
 
         # Define teams with strength values
         teams = {
-            'BenT': {'wins': 4, 'losses': 5, 'run_diff': -11, 'strength': strength_values['BenT']},
-            'Tom': {'wins': 4, 'losses': 5, 'run_diff': -17, 'strength': strength_values['Tom']},
-            'Jmo': {'wins': 7, 'losses': 2, 'run_diff': 20, 'strength': strength_values['Jmo']},
-            'BenR': {'wins': 5, 'losses': 4, 'run_diff': 1, 'strength': strength_values['BenR']},
-            'Kircher': {'wins': 5, 'losses': 4, 'run_diff': 5, 'strength': strength_values['Kircher']},
-            'Carbone': {'wins': 4, 'losses': 5, 'run_diff': 1, 'strength': strength_values['Carbone']},
-            'Julian': {'wins': 1, 'losses': 8, 'run_diff': -19, 'strength': strength_values['Julian']},
-            'HarryKirch': {'wins': 6, 'losses': 3, 'run_diff': 20, 'strength': strength_values['HarryKirch']}
+            'BenT': {'wins': 3, 'losses': 4, 'run_diff': -12, 'strength': strength_values['BenT']},
+            'Tom': {'wins': 3, 'losses': 4, 'run_diff': 10, 'strength': strength_values['Tom']},
+            'Jmo': {'wins': 6, 'losses': 1, 'run_diff': 10, 'strength': strength_values['Jmo']},
+            'BenR': {'wins': 3, 'losses': 4, 'run_diff': -4, 'strength': strength_values['BenR']},
+            'Kircher': {'wins': 0, 'losses': 7, 'run_diff': -38, 'strength': strength_values['Kircher']},
+            'Carbone': {'wins': 5, 'losses': 2, 'run_diff': +23, 'strength': strength_values['Carbone']},
+            'Julian': {'wins': 4, 'losses': 3, 'run_diff': -4, 'strength': strength_values['Julian']},
+            'HarryKirch': {'wins': 4, 'losses': 3, 'run_diff': 15, 'strength': strength_values['HarryKirch']}
         }
 
         remaining_games = [
-            ('Kircher', 'Julian'),
-            ('Jmo', 'Carbone'),
+            ('Kircher', 'BenR'),
+            ('Carbone', 'Jmo'),
             ('Tom', 'BenT'),
-            ('HarryKirch', 'BenR')
+            ('HarryKirch', 'Julian'),
+            ('Kircher', 'HarryKirch'),
+            ('BenT', 'Carbone'),
+            ('Jmo', 'Julian'),
+            ('Tom', 'BenR'),
+            ('HarryKirch', 'Carbone'),
+            ('Tom', 'Julian'),
+            ('Kircher', 'BenT'),
+            ('BenR', 'Jmo'),
         ]
 
         # Run simulation
@@ -445,21 +453,29 @@ def home():
     )
 
 base_standings = {
-            'BenT': {'wins': 4, 'losses': 5, 'run_diff': -11},
-            'Tom': {'wins': 4, 'losses': 5, 'run_diff': -17},
-            'Jmo': {'wins': 7, 'losses': 2, 'run_diff': 20},
-            'BenR': {'wins': 5, 'losses': 4, 'run_diff': 1},
-            'Kircher': {'wins': 5, 'losses': 4, 'run_diff': 5},
-            'Carbone': {'wins': 4, 'losses': 5, 'run_diff': 1},
-            'Julian': {'wins': 1, 'losses': 8, 'run_diff': -19},
-            'HarryKirch': {'wins': 6, 'losses': 3, 'run_diff': 20}
+            'BenT': {'wins': 3, 'losses': 4, 'run_diff': -12},
+            'Tom': {'wins': 3, 'losses': 4, 'run_diff': 10},
+            'Jmo': {'wins': 6, 'losses': 1, 'run_diff': 10},
+            'BenR': {'wins': 3, 'losses': 4, 'run_diff': -4},
+            'Kircher': {'wins': 0, 'losses': 7, 'run_diff': -38},
+            'Carbone': {'wins': 5, 'losses': 2, 'run_diff': +23},
+            'Julian': {'wins': 4, 'losses': 3, 'run_diff': -4},
+            'HarryKirch': {'wins': 4, 'losses': 3, 'run_diff': 15}
     }
 
 remaining_games = [
-            ('Kircher', 'Julian'),
-            ('Jmo', 'Carbone'),
+            ('Kircher', 'BenR'),
+            ('Carbone', 'Jmo'),
             ('Tom', 'BenT'),
-            ('HarryKirch', 'BenR')
+            ('HarryKirch', 'Julian'),
+            ('Kircher', 'HarryKirch'),
+            ('BenT', 'Carbone'),
+            ('Jmo', 'Julian'),
+            ('Tom', 'BenR'),
+            ('HarryKirch', 'Carbone'),
+            ('Tom', 'Julian'),
+            ('Kircher', 'BenT'),
+            ('BenR', 'Jmo'),
         ]
 
 previous_scores = {i: (0, 0) for i in range(len(remaining_games))}
@@ -558,14 +574,14 @@ def reset_scores():
 
     # Fully reset base_standings to original values
     base_standings = {
-            'BenT': {'wins': 4, 'losses': 5, 'run_diff': -11},
-            'Tom': {'wins': 4, 'losses': 5, 'run_diff': -17},
-            'Jmo': {'wins': 7, 'losses': 2, 'run_diff': 20},
-            'BenR': {'wins': 5, 'losses': 4, 'run_diff': 1},
-            'Kircher': {'wins': 5, 'losses': 4, 'run_diff': 5},
-            'Carbone': {'wins': 4, 'losses': 5, 'run_diff': 1},
-            'Julian': {'wins': 1, 'losses': 8, 'run_diff': -19},
-            'HarryKirch': {'wins': 6, 'losses': 3, 'run_diff': 20}
+            'BenT': {'wins': 3, 'losses': 4, 'run_diff': -12},
+            'Tom': {'wins': 3, 'losses': 4, 'run_diff': 10},
+            'Jmo': {'wins': 6, 'losses': 1, 'run_diff': 10},
+            'BenR': {'wins': 3, 'losses': 4, 'run_diff': -4},
+            'Kircher': {'wins': 0, 'losses': 7, 'run_diff': -38},
+            'Carbone': {'wins': 5, 'losses': 2, 'run_diff': +23},
+            'Julian': {'wins': 4, 'losses': 3, 'run_diff': -4},
+            'HarryKirch': {'wins': 4, 'losses': 3, 'run_diff': 15}
     }
 
     strength_values = {
