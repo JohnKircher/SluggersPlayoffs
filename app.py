@@ -389,21 +389,17 @@ def home():
 
         # Define teams with strength values
         teams = {
-            'BenT': {'wins': 3, 'losses': 4, 'run_diff': -12, 'strength': strength_values['BenT']},
-            'Tom': {'wins': 3, 'losses': 4, 'run_diff': 10, 'strength': strength_values['Tom']},
-            'Jmo': {'wins': 6, 'losses': 1, 'run_diff': 10, 'strength': strength_values['Jmo']},
-            'BenR': {'wins': 3, 'losses': 4, 'run_diff': -4, 'strength': strength_values['BenR']},
-            'Kircher': {'wins': 0, 'losses': 7, 'run_diff': -38, 'strength': strength_values['Kircher']},
-            'Carbone': {'wins': 5, 'losses': 2, 'run_diff': +23, 'strength': strength_values['Carbone']},
-            'Julian': {'wins': 4, 'losses': 3, 'run_diff': -4, 'strength': strength_values['Julian']},
-            'HarryKirch': {'wins': 4, 'losses': 3, 'run_diff': 15, 'strength': strength_values['HarryKirch']}
+            'BenT': {'wins': 3, 'losses': 5, 'run_diff': -14, 'strength': strength_values['BenT']},
+            'Tom': {'wins': 4, 'losses': 4, 'run_diff': 12, 'strength': strength_values['Tom']},
+            'Jmo': {'wins': 6, 'losses': 2, 'run_diff': 7, 'strength': strength_values['Jmo']},
+            'BenR': {'wins': 4, 'losses': 4, 'run_diff': -1, 'strength': strength_values['BenR']},
+            'Kircher': {'wins': 0, 'losses': 8, 'run_diff': -41, 'strength': strength_values['Kircher']},
+            'Carbone': {'wins': 6, 'losses': 2, 'run_diff': +26, 'strength': strength_values['Carbone']},
+            'Julian': {'wins': 5, 'losses': 3, 'run_diff': 2, 'strength': strength_values['Julian']},
+            'HarryKirch': {'wins': 4, 'losses': 4, 'run_diff': 9, 'strength': strength_values['HarryKirch']}
         }
 
         remaining_games = [
-            ('Kircher', 'BenR'),
-            ('Carbone', 'Jmo'),
-            ('Tom', 'BenT'),
-            ('HarryKirch', 'Julian'),
             ('Kircher', 'HarryKirch'),
             ('BenT', 'Carbone'),
             ('Jmo', 'Julian'),
@@ -453,21 +449,17 @@ def home():
     )
 
 base_standings = {
-            'BenT': {'wins': 3, 'losses': 4, 'run_diff': -12},
-            'Tom': {'wins': 3, 'losses': 4, 'run_diff': 10},
-            'Jmo': {'wins': 6, 'losses': 1, 'run_diff': 10},
-            'BenR': {'wins': 3, 'losses': 4, 'run_diff': -4},
-            'Kircher': {'wins': 0, 'losses': 7, 'run_diff': -38},
-            'Carbone': {'wins': 5, 'losses': 2, 'run_diff': +23},
-            'Julian': {'wins': 4, 'losses': 3, 'run_diff': -4},
-            'HarryKirch': {'wins': 4, 'losses': 3, 'run_diff': 15}
+            'BenT': {'wins': 3, 'losses': 5, 'run_diff': -14},
+            'Tom': {'wins': 4, 'losses': 4, 'run_diff': 12},
+            'Jmo': {'wins': 6, 'losses': 2, 'run_diff': 7},
+            'BenR': {'wins': 4, 'losses': 4, 'run_diff': -1},
+            'Kircher': {'wins': 0, 'losses': 8, 'run_diff': -41},
+            'Carbone': {'wins': 6, 'losses': 2, 'run_diff': +26},
+            'Julian': {'wins': 5, 'losses': 3, 'run_diff': 2},
+            'HarryKirch': {'wins': 4, 'losses': 4, 'run_diff': 9}
     }
 
 remaining_games = [
-            ('Kircher', 'BenR'),
-            ('Carbone', 'Jmo'),
-            ('Tom', 'BenT'),
-            ('HarryKirch', 'Julian'),
             ('Kircher', 'HarryKirch'),
             ('BenT', 'Carbone'),
             ('Jmo', 'Julian'),
@@ -574,14 +566,14 @@ def reset_scores():
 
     # Fully reset base_standings to original values
     base_standings = {
-            'BenT': {'wins': 3, 'losses': 4, 'run_diff': -12},
-            'Tom': {'wins': 3, 'losses': 4, 'run_diff': 10},
-            'Jmo': {'wins': 6, 'losses': 1, 'run_diff': 10},
-            'BenR': {'wins': 3, 'losses': 4, 'run_diff': -4},
-            'Kircher': {'wins': 0, 'losses': 7, 'run_diff': -38},
-            'Carbone': {'wins': 5, 'losses': 2, 'run_diff': +23},
-            'Julian': {'wins': 4, 'losses': 3, 'run_diff': -4},
-            'HarryKirch': {'wins': 4, 'losses': 3, 'run_diff': 15}
+            'BenT': {'wins': 3, 'losses': 5, 'run_diff': -14},
+            'Tom': {'wins': 4, 'losses': 4, 'run_diff': 12},
+            'Jmo': {'wins': 6, 'losses': 2, 'run_diff': 7},
+            'BenR': {'wins': 4, 'losses': 4, 'run_diff': -1},
+            'Kircher': {'wins': 0, 'losses': 8, 'run_diff': -41},
+            'Carbone': {'wins': 6, 'losses': 2, 'run_diff': +26},
+            'Julian': {'wins': 5, 'losses': 3, 'run_diff': 2},
+            'HarryKirch': {'wins': 4, 'losses': 4, 'run_diff': 9}
     }
 
     strength_values = {
