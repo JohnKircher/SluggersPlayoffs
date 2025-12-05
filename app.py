@@ -206,8 +206,8 @@ def calculate_live_probabilities(base_standings, remaining_games, previous_score
     If all games have been played, the playoff outcomes are calculated directly from the standings.
     """
     divisions = {
-        'Division A': ['Carbone', 'HarryKirch', 'BenT', 'Kircher'],
-        'Division B': ['Jmo', 'Julian', 'Tom', 'BenR']
+        'Division A': ['Jmo', 'HarryKirch', 'Tom', 'Carby'],
+        'Division B': ['Kircher', 'Julian', 'BenT', 'BenR']
     }
     scenarios = defaultdict(lambda: {'clinch_bye': 0, 'clinch_playoffs': 0, 'miss_playoffs': 0})
 
@@ -393,8 +393,8 @@ def home():
             'Tom': {'wins': 5, 'losses': 3, 'run_diff': 22, 'strength': strength_values['Tom']},
             'Jmo': {'wins': 6, 'losses': 2, 'run_diff': 12, 'strength': strength_values['Jmo']},
             'BenR': {'wins': 0, 'losses': 8, 'run_diff': -33, 'strength': strength_values['BenR']},
-            'Kircher': {'wins': 0, 'losses': 8, 'run_diff': -41, 'strength': strength_values['Kircher']},
-            'Carbone': {'wins': 5, 'losses': 3, 'run_diff': +17, 'strength': strength_values['Carbone']},
+            'Kircher': {'wins': 6, 'losses': 2, 'run_diff': 16, 'strength': strength_values['Kircher']},
+            'Carbone': {'wins': 5, 'losses': 3, 'run_diff': 17, 'strength': strength_values['Carbone']},
             'Julian': {'wins': 5, 'losses': 3, 'run_diff': 2, 'strength': strength_values['Julian']},
             'HarryKirch': {'wins': 3, 'losses': 5, 'run_diff': -8, 'strength': strength_values['HarryKirch']}
         }
@@ -453,8 +453,8 @@ base_standings = {
             'Tom': {'wins': 5, 'losses': 3, 'run_diff': 22},
             'Jmo': {'wins': 6, 'losses': 2, 'run_diff': 12},
             'BenR': {'wins': 0, 'losses': 8, 'run_diff': -33},
-            'Kircher': {'wins': 0, 'losses': 8, 'run_diff': -41},
-            'Carbone': {'wins': 5, 'losses': 3, 'run_diff': +17},
+            'Kircher': {'wins': 6, 'losses': 2, 'run_diff': 16},
+            'Carbone': {'wins': 5, 'losses': 3, 'run_diff': 17},
             'Julian': {'wins': 5, 'losses': 3, 'run_diff': 2},
             'HarryKirch': {'wins': 3, 'losses': 5, 'run_diff': -8}
     }
@@ -570,8 +570,8 @@ def reset_scores():
             'Tom': {'wins': 5, 'losses': 3, 'run_diff': 22},
             'Jmo': {'wins': 6, 'losses': 2, 'run_diff': 12},
             'BenR': {'wins': 0, 'losses': 8, 'run_diff': -33},
-            'Kircher': {'wins': 0, 'losses': 8, 'run_diff': -41},
-            'Carbone': {'wins': 5, 'losses': 3, 'run_diff': +17},
+            'Kircher': {'wins': 6, 'losses': 2, 'run_diff': 16},
+            'Carbone': {'wins': 5, 'losses': 3, 'run_diff': 17},
             'Julian': {'wins': 5, 'losses': 3, 'run_diff': 2},
             'HarryKirch': {'wins': 3, 'losses': 5, 'run_diff': -8}
     }
